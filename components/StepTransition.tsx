@@ -9,8 +9,15 @@ interface Props {
 
 export default function StepTransition({ children, stepKey }: Props) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+    
     // Reset animation when step changes
     setIsVisible(false)
     
@@ -20,7 +27,12 @@ export default function StepTransition({ children, stepKey }: Props) {
     }, 50)
 
     return () => clearTimeout(timer)
-  }, [stepKey])
+  }, [stepKey, isMounted])
+
+  // Show content immediately on first render to prevent loading hang
+  if (!isMounted) {
+    return <div>{children}</div>
+  }
 
   return (
     <div
