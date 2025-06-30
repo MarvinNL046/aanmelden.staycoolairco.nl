@@ -6,6 +6,7 @@ import PaymentFrequencySelector from './PaymentFrequency'
 import Tooltip, { InfoIcon } from './Tooltip'
 import { calculateMonthlyPrice, EXTRA_INDOOR_UNIT_PRICE } from '@/utils/pricing'
 import NumberInput from './NumberInput'
+import PricePreview from './PricePreview'
 
 interface Props {
   data: CustomerData
@@ -65,12 +66,13 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
   return (
     <form onSubmit={handleSubmit}>
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Uw gegevens</h2>
-      <p className="text-gray-600 mb-8">Vul uw contactgegevens in voor het onderhoudscontract</p>
+      <p className="text-gray-600 mb-6">Vul uw contactgegevens in voor het onderhoudscontract</p>
+      <p className="text-sm text-gray-500 mb-8"><span className="text-red-500">*</span> Verplichte velden</p>
       
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Voornaam
+            Voornaam <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -235,9 +237,12 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
           />
         </div>
         
-        <p className="text-sm text-gray-600 mt-2">
-          Totaal aantal units: {(formData.numberOfOutdoorUnits || 0) + (formData.numberOfIndoorUnits || 0)}
-        </p>
+        <PricePreview 
+          contractType={formData.contractType}
+          outdoorUnits={formData.numberOfOutdoorUnits}
+          indoorUnits={formData.numberOfIndoorUnits}
+          paymentFrequency={formData.paymentFrequency}
+        />
         
         {formData.contractType !== 'geen' && formData.numberOfIndoorUnits > formData.numberOfOutdoorUnits && (
           <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
