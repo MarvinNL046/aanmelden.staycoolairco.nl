@@ -43,7 +43,7 @@ export async function sendConfirmationEmail(data: EmailData) {
       : `€${totalPrice},- per maand`
   
   const serviceDetails = customer.contractType !== 'geen' 
-    ? `Uw contract gaat in binnen 5 werkdagen. De eerste automatische incasso zal plaatsvinden op de door u opgegeven rekening eindigend op ...${sepa?.iban?.slice(-4) || '****'}.`
+    ? `Uw contract gaat in binnen 5 werkdagen. De afschrijving zal plaatsvinden aan het einde van de maand tussen de 27ste en 28ste op de door u opgegeven rekening eindigend op ...${sepa?.iban?.slice(-4) || '****'}.`
     : `Wij nemen contact met u op voor het plannen van de onderhoudsbeurt. U betaalt na afloop van de onderhoudsbeurt.`
   
   const templateParams = {

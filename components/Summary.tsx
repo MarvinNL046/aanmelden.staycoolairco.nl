@@ -129,7 +129,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
         </p>
         <p className="text-sm text-gray-500 mb-8">
           {customerData.contractType !== 'geen' 
-            ? 'Uw eerste incasso zal binnen 5 werkdagen plaatsvinden.'
+            ? 'De afschrijving zal plaatsvinden aan het einde van de maand tussen de 27ste en 28ste.'
             : 'Wij nemen contact met u op voor het plannen van de onderhoudsbeurt.'
           }
         </p>
