@@ -1,8 +1,10 @@
-import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import { jsPDF } from 'jspdf'
 import { CustomerData, SepaData, ContractType } from '@/types/contract'
 import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE } from './pricing'
 import { formatIBAN, getBankName } from './iban-validator'
+
+// Import autoTable plugin
+require('jspdf-autotable')
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
