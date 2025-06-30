@@ -103,9 +103,6 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       
       setSubmitted(true)
       
-      // Download PDF automatisch na succesvolle aanmelding
-      generateContractPDF(customerData, customerData.contractType !== 'geen' ? sepaData : null)
-      
       // Clear localStorage na succesvolle submit
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem('contractFormData')
@@ -130,14 +127,42 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
         <p className="text-gray-600 mb-4">
           U ontvangt binnen enkele minuten een bevestiging per email.
         </p>
-        <p className="text-gray-600 mb-6">
-          Een PDF kopie van uw contract wordt automatisch gedownload.
-        </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 mb-8">
           {customerData.contractType !== 'geen' 
             ? 'Uw eerste incasso zal binnen 5 werkdagen plaatsvinden.'
             : 'Wij nemen contact met u op voor het plannen van de onderhoudsbeurt.'
           }
+        </p>
+        
+        <div className="space-y-3">
+          <button
+            onClick={() => generateContractPDF(customerData, customerData.contractType !== 'geen' ? sepaData : null)}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download contract als PDF
+          </button>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="https://staycoolairco.nl"
+              className="inline-flex items-center justify-center px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Ga naar hoofdwebsite
+            </a>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Nieuwe aanmelding
+            </button>
+          </div>
+        </div>
+        
+        <p className="text-sm text-gray-400 mt-8">
+          U kunt deze pagina nu veilig sluiten
         </p>
       </div>
     )
