@@ -1,0 +1,173 @@
+<div
+  style="
+    font-family: system-ui, -apple-system, sans-serif, Arial;
+    font-size: 14px;
+    color: #333;
+    padding: 14px 8px;
+    background-color: #f5f5f5;
+  "
+>
+  <div style="max-width: 600px; margin: auto; background-color: #fff">
+    <div style="border-top: 6px solid #0066cc; padding: 16px">
+      <a
+        style="text-decoration: none; outline: none; margin-right: 8px; vertical-align: middle"
+        href="https://staycoolairco.nl"
+        target="_blank"
+      >
+        <img
+          style="height: 32px; vertical-align: middle"
+          height="32px"
+          src="cid:logo.png"
+          alt="StayCool Airco"
+        />
+      </a>
+      <span
+        style="
+          font-size: 16px;
+          vertical-align: middle;
+          border-left: 1px solid #333;
+          padding-left: 8px;
+        "
+      >
+        <strong>Bevestiging Onderhoudscontract</strong>
+      </span>
+    </div>
+    
+    <div style="padding: 0 16px">
+      <p>Beste {{to_name}},</p>
+      <p>Bedankt voor het afsluiten van uw onderhoudscontract bij StayCool Airco. Hierbij bevestigen wij uw aanmelding.</p>
+      
+      <div
+        style="
+          text-align: left;
+          font-size: 14px;
+          padding-bottom: 4px;
+          border-bottom: 2px solid #333;
+          margin-top: 24px;
+        "
+      >
+        <strong>Contract Details</strong>
+      </div>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px">
+        <tr>
+          <td style="padding: 8px 0; color: #666">Type contract:</td>
+          <td style="padding: 8px 0; text-align: right">
+            <strong>{{contract_type}}</strong>
+          </td>
+        </tr>
+        <tr style="background-color: #f9f9f9">
+          <td style="padding: 8px 0; color: #666">Aantal buitendelen:</td>
+          <td style="padding: 8px 0; text-align: right">
+            <strong>{{outdoor_units}}</strong>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #666">Aantal binnendelen:</td>
+          <td style="padding: 8px 0; text-align: right">
+            <strong>{{indoor_units}}</strong>
+          </td>
+        </tr>
+        {{#if payment_frequency}}
+        <tr style="background-color: #f9f9f9">
+          <td style="padding: 8px 0; color: #666">Betalingsfrequentie:</td>
+          <td style="padding: 8px 0; text-align: right">
+            <strong>{{payment_frequency}}</strong>
+          </td>
+        </tr>
+        {{/if}}
+      </table>
+      
+      <div style="margin: 24px 0; padding: 16px; background-color: #e8f4f8; border-radius: 8px">
+        <table style="width: 100%; border-collapse: collapse">
+          <tr>
+            <td style="font-size: 16px">
+              <strong>Totaal bedrag:</strong>
+            </td>
+            <td style="text-align: right; font-size: 20px; color: #0066cc">
+              <strong>{{total_price}}</strong>
+            </td>
+          </tr>
+        </table>
+      </div>
+      
+      <div
+        style="
+          text-align: left;
+          font-size: 14px;
+          padding-bottom: 4px;
+          border-bottom: 2px solid #333;
+          margin-top: 24px;
+        "
+      >
+        <strong>Uw Gegevens</strong>
+      </div>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px">
+        <tr>
+          <td style="padding: 8px 0; color: #666">Naam:</td>
+          <td style="padding: 8px 0">{{to_name}}</td>
+        </tr>
+        <tr style="background-color: #f9f9f9">
+          <td style="padding: 8px 0; color: #666">Telefoon:</td>
+          <td style="padding: 8px 0">{{phone}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #666">Email:</td>
+          <td style="padding: 8px 0">{{from_email}}</td>
+        </tr>
+        <tr style="background-color: #f9f9f9">
+          <td style="padding: 8px 0; color: #666">Woonplaats:</td>
+          <td style="padding: 8px 0">{{city}}</td>
+        </tr>
+      </table>
+      
+      <div style="margin: 24px 0; padding: 16px; background-color: #fff8e1; border-left: 4px solid #ffc107; font-size: 13px">
+        <strong>Wat gebeurt er nu?</strong>
+        <ul style="margin: 8px 0; padding-left: 20px">
+          <li>Wij verwerken uw aanmelding binnen 2 werkdagen</li>
+          <li>U ontvangt een schriftelijke bevestiging per post</li>
+          {{#if payment_frequency}}
+          <li>De eerste automatische incasso vindt plaats binnen 5 werkdagen</li>
+          {{/if}}
+          <li>Wij nemen contact met u op voor het plannen van de eerste onderhoudsbeurt</li>
+        </ul>
+      </div>
+      
+      {{#if service}}
+      <div style="margin: 16px 0; padding: 12px; background-color: #f5f5f5; border-radius: 4px; font-size: 13px">
+        {{service}}
+      </div>
+      {{/if}}
+    </div>
+    
+    <div style="padding: 24px 16px; background-color: #f5f5f5; margin-top: 24px">
+      <table style="width: 100%; border-collapse: collapse">
+        <tr>
+          <td style="text-align: center">
+            <a href="https://facebook.com/staycoolairco" style="text-decoration: none; margin: 0 8px">
+              <img src="cid:facebook.png" alt="Facebook" style="height: 24px" />
+            </a>
+            <a href="https://instagram.com/staycoolairco" style="text-decoration: none; margin: 0 8px">
+              <img src="cid:instagram.png" alt="Instagram" style="height: 24px" />
+            </a>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="text-align: center; margin-top: 16px; font-size: 12px; color: #666">
+        <strong>StayCool Airco B.V.</strong><br />
+        Tel: 046 202 1430 | Email: info@staycoolairco.nl<br />
+        Website: <a href="https://staycoolairco.nl" style="color: #0066cc">staycoolairco.nl</a>
+      </div>
+    </div>
+  </div>
+  
+  <div style="max-width: 600px; margin: auto; padding: 16px 0">
+    <p style="color: #999; font-size: 12px; text-align: center">
+      Dit is een automatisch gegenereerd bericht verstuurd naar {{from_email}}<br />
+      U ontvangt deze email omdat u een onderhoudscontract heeft afgesloten.<br />
+      Voor vragen kunt u contact met ons opnemen via info@staycoolairco.nl
+    </p>
+  </div>
+</div>

@@ -1,0 +1,77 @@
+<!-- 
+EmailJS Template voor Onderhoudscontracten
+Gebruik deze HTML in EmailJS om een professionele email template te maken
+
+Variables:
+{{to_name}} - Naam klant
+{{contract_type}} - Type contract
+{{outdoor_units}} - Aantal buitendelen
+{{indoor_units}} - Aantal binnendelen  
+{{payment_frequency}} - Betalingsfrequentie
+{{total_price}} - Totaal bedrag
+{{address}} - Adres klant
+{{service_details}} - Extra details
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #0066cc; color: white; padding: 20px; text-align: center; }
+    .content { background: #f4f4f4; padding: 20px; margin: 20px 0; }
+    .details { background: white; padding: 15px; border-radius: 5px; }
+    .footer { text-align: center; color: #666; font-size: 12px; }
+    .highlight { color: #0066cc; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>StayCool Airco</h1>
+      <p>Bevestiging Onderhoudscontract</p>
+    </div>
+    
+    <div class="content">
+      <h2>Beste {{to_name}},</h2>
+      
+      <p>Bedankt voor het afsluiten van uw onderhoudscontract bij StayCool Airco. Hierbij bevestigen wij uw aanmelding.</p>
+      
+      <div class="details">
+        <h3>Contract Details:</h3>
+        <p><strong>Type contract:</strong> {{contract_type}}</p>
+        <p><strong>Aantal buitendelen:</strong> {{outdoor_units}}</p>
+        <p><strong>Aantal binnendelen:</strong> {{indoor_units}}</p>
+        <p><strong>Betalingsfrequentie:</strong> {{payment_frequency}}</p>
+        <p class="highlight"><strong>Totaal bedrag:</strong> {{total_price}}</p>
+      </div>
+      
+      <div class="details" style="margin-top: 15px;">
+        <h3>Uw gegevens:</h3>
+        <p>{{address}}</p>
+      </div>
+      
+      <p style="margin-top: 20px;">{{service_details}}</p>
+      
+      <p><strong>Wat gebeurt er nu?</strong></p>
+      <ul>
+        <li>Wij verwerken uw aanmelding binnen 2 werkdagen</li>
+        <li>U ontvangt een schriftelijke bevestiging per post</li>
+        <li>De eerste automatische incasso vindt plaats binnen 5 werkdagen</li>
+        <li>Wij nemen contact met u op voor het plannen van de eerste onderhoudsbeurt</li>
+      </ul>
+    </div>
+    
+    <div class="footer">
+      <p>
+        <strong>StayCool Airco B.V.</strong><br>
+        Tel: 046 202 1430<br>
+        Email: info@staycoolairco.nl<br>
+        Website: www.staycoolairco.nl
+      </p>
+      <p>Dit is een automatisch gegenereerd bericht. Voor vragen kunt u contact met ons opnemen.</p>
+    </div>
+  </div>
+</body>
+</html>
