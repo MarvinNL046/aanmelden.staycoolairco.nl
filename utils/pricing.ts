@@ -45,11 +45,14 @@ export function calculateOneTimePrice(
   outdoorUnits: number,
   indoorUnits: number
 ): number {
-  // Voor losse beurt: €179 voor eerste systeem
   const basePrice = contractPrices.geen
   
-  // Bij multi-split: extra €89,50 (helft van €179) per extra binnendeel
+  // Bereken aantal complete units (1 buiten + 1 binnen = 1 complete unit)
+  const completeUnits = Math.min(outdoorUnits, indoorUnits)
+  
+  // Bij multi-split: extra €89,50 per extra binnendeel
   const extraIndoorUnits = Math.max(0, indoorUnits - outdoorUnits)
   
-  return basePrice + (extraIndoorUnits * EXTRA_INDOOR_UNIT_ONETIME)
+  // Totaal: (aantal complete units × €179) + (extra binnendelen × €89,50)
+  return (completeUnits * basePrice) + (extraIndoorUnits * EXTRA_INDOOR_UNIT_ONETIME)
 }

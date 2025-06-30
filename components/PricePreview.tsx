@@ -19,6 +19,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
   const oneTimePrice = calculateOneTimePrice(outdoorUnits, indoorUnits)
   
   const extraIndoorUnits = Math.max(0, indoorUnits - outdoorUnits)
+  const completeUnits = Math.min(outdoorUnits, indoorUnits)
   
   if (contractType === 'geen') {
     return (
@@ -27,11 +28,18 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
           <span className="text-sm font-medium text-blue-900">Totaalprijs:</span>
           <span className="text-lg font-bold text-blue-600">€{oneTimePrice},-</span>
         </div>
-        {extraIndoorUnits > 0 && (
-          <p className="text-xs text-blue-700 mt-1">
-            Inclusief {extraIndoorUnits} extra {extraIndoorUnits === 1 ? 'binnendeel' : 'binnendelen'} à €{EXTRA_INDOOR_UNIT_ONETIME},-
-          </p>
-        )}
+        <div className="space-y-1 mt-2">
+          {completeUnits > 1 && (
+            <p className="text-xs text-blue-700">
+              {completeUnits} complete units à €{contractPrices.geen},- = €{completeUnits * contractPrices.geen},-
+            </p>
+          )}
+          {extraIndoorUnits > 0 && (
+            <p className="text-xs text-blue-700">
+              {extraIndoorUnits} extra {extraIndoorUnits === 1 ? 'binnendeel' : 'binnendelen'} à €{EXTRA_INDOOR_UNIT_ONETIME},- = €{extraIndoorUnits * EXTRA_INDOOR_UNIT_ONETIME},-
+            </p>
+          )}
+        </div>
       </div>
     )
   }

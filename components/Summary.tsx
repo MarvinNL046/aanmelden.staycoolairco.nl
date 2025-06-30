@@ -244,9 +244,16 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
               {customerData.contractType === 'geen' ? (
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Basis prijs</span>
-                    <span className="font-medium">€{contractPrices.geen},- per onderhoudsbeurt</span>
+                    <span className="text-gray-600">Prijs per complete unit</span>
+                    <span className="font-medium">€{contractPrices.geen},-</span>
                   </div>
+                  
+                  {Math.min(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits) > 1 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">{Math.min(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)} complete units</span>
+                      <span className="font-medium">€{Math.min(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits) * contractPrices.geen},-</span>
+                    </div>
+                  )}
                   
                   {customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
