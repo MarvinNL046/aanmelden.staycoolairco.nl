@@ -35,6 +35,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null)
+  const [contractId, setContractId] = useState<string>('')
 
   const monthlyPrice = calculateMonthlyPrice(
     customerData.contractType,
@@ -73,7 +74,8 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
     
     try {
       // Generate contract ID
-      const contractId = `OC-${Date.now()}`
+      const generatedContractId = `OC-${Date.now()}`
+      setContractId(generatedContractId)
       
       // Submit to database
       await submitContract({
@@ -95,7 +97,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       const ghlResult = await sendToGoHighLevel(
         customerData,
         customerData.contractType !== 'geen' ? sepaData : null,
-        contractId
+        generatedContractId
       )
       
       if (!ghlResult.success) {
@@ -121,6 +123,12 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       <div className="text-center py-12">
         <SuccessAnimation />
         <h2 className="text-2xl font-semibold mb-2">Bedankt voor uw aanmelding!</h2>
+        
+        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <p className="text-sm text-gray-600">Uw contractnummer:</p>
+          <p className="text-lg font-mono font-bold text-gray-900">{contractId}</p>
+        </div>
+        
         <p className="text-gray-600 mb-4">
           U ontvangt binnen enkele minuten een bevestiging per email.
         </p>
