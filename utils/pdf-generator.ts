@@ -1,10 +1,8 @@
 import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { CustomerData, SepaData, ContractType } from '@/types/contract'
 import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE } from './pricing'
 import { formatIBAN, getBankName } from './iban-validator'
-
-// Import autoTable plugin
-require('jspdf-autotable')
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
@@ -67,7 +65,7 @@ export function generateContractPDF(
     ['Adres', `${customerData.address}, ${customerData.postalCode} ${customerData.city}`]
   ]
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: 65,
     head: [],
     body: personalData,
@@ -116,7 +114,7 @@ export function generateContractPDF(
   contractDetails.push(['', '']) // Empty row for spacing
   contractDetails.push(['Totaalbedrag', `€${totalPrice},-${customerData.contractType !== 'geen' ? (customerData.paymentFrequency === 'jaarlijks' ? ' per jaar' : ' per maand') : ''}`])
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: contractY + 5,
     head: [],
     body: contractDetails,
@@ -152,7 +150,7 @@ export function generateContractPDF(
       ['Datum handtekening', `${date} - Online`]
     ]
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: sepaY + 5,
       head: [],
       body: sepaDetails,
