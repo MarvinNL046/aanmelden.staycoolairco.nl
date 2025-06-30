@@ -126,7 +126,7 @@ export default function SepaForm({ data, onSubmit, onBack }: Props) {
         )}
       </div>
       
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <label className="flex items-start">
           <input
             type="checkbox"
@@ -140,6 +140,31 @@ export default function SepaForm({ data, onSubmit, onBack }: Props) {
             met StayCool Airco of uw bank.
           </span>
         </label>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-xs text-gray-600">
+            Door dit formulier te verzenden gaat u akkoord met onze{' '}
+            <a 
+              href="https://staycoolairco.nl/privacy-policy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              privacyverklaring
+            </a>
+            {' '}en{' '}
+            <a 
+              href="https://staycoolairco.nl/algemene-voorwaarden" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              algemene voorwaarden
+            </a>.
+            Uw gegevens worden veilig verwerkt conform de AVG/GDPR wetgeving.
+          </p>
+        </div>
+        
         {!agreed && (
           <p className="text-red-500 text-sm mt-1">
             U moet akkoord gaan met de voorwaarden

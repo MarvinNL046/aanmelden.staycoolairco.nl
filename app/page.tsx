@@ -4,6 +4,7 @@ import { useState } from 'react'
 import ContractForm from '@/components/ContractForm'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import ServiceWorkerCleanup from '@/components/ServiceWorkerCleanup'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   return (
@@ -33,6 +34,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <Footer />
     </main>
   )
 }
