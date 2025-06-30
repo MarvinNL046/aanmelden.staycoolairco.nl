@@ -5,6 +5,7 @@ import { CustomerData, PaymentFrequency } from '@/types/contract'
 import PaymentFrequencySelector from './PaymentFrequency'
 import Tooltip, { InfoIcon } from './Tooltip'
 import { calculateMonthlyPrice, EXTRA_INDOOR_UNIT_PRICE } from '@/utils/pricing'
+import NumberInput from './NumberInput'
 
 interface Props {
   data: CustomerData
@@ -213,43 +214,25 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
         </div>
         
         <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Aantal buitendelen
-            </label>
-            <input
-              type="number"
-              name="numberOfOutdoorUnits"
-              value={formData.numberOfOutdoorUnits}
-              onChange={handleChange}
-              min="1"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.numberOfOutdoorUnits ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.numberOfOutdoorUnits && (
-              <p className="text-red-500 text-sm mt-1">{errors.numberOfOutdoorUnits}</p>
-            )}
-          </div>
+          <NumberInput
+            name="numberOfOutdoorUnits"
+            value={formData.numberOfOutdoorUnits}
+            onChange={(name, value) => setFormData({ ...formData, [name]: value })}
+            label="Aantal buitendelen"
+            error={errors.numberOfOutdoorUnits}
+            min={1}
+            max={10}
+          />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Aantal binnendelen
-            </label>
-            <input
-              type="number"
-              name="numberOfIndoorUnits"
-              value={formData.numberOfIndoorUnits}
-              onChange={handleChange}
-              min="1"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.numberOfIndoorUnits ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.numberOfIndoorUnits && (
-              <p className="text-red-500 text-sm mt-1">{errors.numberOfIndoorUnits}</p>
-            )}
-          </div>
+          <NumberInput
+            name="numberOfIndoorUnits"
+            value={formData.numberOfIndoorUnits}
+            onChange={(name, value) => setFormData({ ...formData, [name]: value })}
+            label="Aantal binnendelen"
+            error={errors.numberOfIndoorUnits}
+            min={1}
+            max={20}
+          />
         </div>
         
         <p className="text-sm text-gray-600 mt-2">

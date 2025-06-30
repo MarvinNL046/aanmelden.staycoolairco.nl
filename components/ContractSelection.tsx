@@ -20,7 +20,7 @@ const contractOptions: ContractOption[] = [
     id: 'basis',
     name: 'Basis pakket',
     price: 11,
-    description: '€11,- per maand per binnendeel',
+    description: '€11,- per maand per complete airco unit',
     features: [
       'Jaarlijkse onderhoudsbeurt',
       'Arbeidsloon inbegrepen',
@@ -34,7 +34,7 @@ const contractOptions: ContractOption[] = [
     id: 'premium',
     name: 'Premium pakket',
     price: 16,
-    description: '€16,- per maand per binnendeel',
+    description: '€16,- per maand per complete airco unit',
     features: [
       'Jaarlijkse onderhoudsbeurt',
       'Arbeidsloon inbegrepen', 
@@ -57,7 +57,10 @@ export default function ContractSelection({ onSelect, selected }: Props) {
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Kies uw onderhoudscontract</h2>
-      <p className="text-gray-600 mb-8">Selecteer het pakket dat het beste bij uw situatie past</p>
+      <p className="text-gray-600 mb-2">Selecteer het pakket dat het beste bij uw situatie past</p>
+      <p className="text-sm text-gray-500 mb-8">
+        <span className="font-medium">Complete airco unit</span> = 1 buitendeel + 1 binnendeel
+      </p>
       
       <div className="grid lg:grid-cols-3 gap-6">
         {contractOptions.map((option) => (
