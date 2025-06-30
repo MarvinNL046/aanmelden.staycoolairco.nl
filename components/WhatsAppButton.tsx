@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function WhatsAppButton({ 
-  phoneNumber = '31462021430', // StayCool Airco nummer zonder +
+  phoneNumber = '31636481054', // WhatsApp nummer zonder +
   message = 'Hallo, ik heb een vraag over het onderhoudscontract',
   className = ''
 }: Props) {
