@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import ContractForm from '@/components/ContractForm'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import ServiceWorkerCleanup from '@/components/ServiceWorkerCleanup'
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50">
+      <ServiceWorkerCleanup />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
