@@ -50,7 +50,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-600">
-          <p>© 2025 StayCool Airco B.V. | KvK: 75296543 | BTW: NL860654297B01</p>
+          <p>© 2025 StayCool Airco B.V. | KvK: 82065888 | BTW: NL003638007B69</p>
         </div>
       </div>
     </footer>

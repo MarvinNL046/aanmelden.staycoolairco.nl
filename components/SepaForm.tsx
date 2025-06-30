@@ -229,7 +229,7 @@ export default function SepaForm({ data, onSubmit, onBack }: Props) {
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <p className="text-xs text-gray-600">
           <strong>Incassant:</strong> StayCool Airco B.V.<br />
-          <strong>Incassant ID:</strong> NL00ZZZ000000000000<br />
+          <strong>Incassant ID:</strong> NL18ZZZ820658880000<br />
           <strong>Kenmerk machtiging:</strong> Wordt toegekend na ondertekening
         </p>
       </div>

@@ -170,7 +170,7 @@ export function generateContractPDF(
     doc.setFontSize(8)
     doc.setTextColor(100, 100, 100)
     doc.text('Incassant: StayCool Airco B.V.', 20, mandateY)
-    doc.text('Incassant ID: NL00ZZZ000000000000', 20, mandateY + 4)
+    doc.text('Incassant ID: NL18ZZZ820658880000', 20, mandateY + 4)
     doc.text(`Kenmerk machtiging: ${contractId}`, 20, mandateY + 8)
   }
   
@@ -181,7 +181,7 @@ export function generateContractPDF(
   
   doc.setFontSize(8)
   doc.setTextColor(100, 100, 100)
-  doc.text('StayCool Airco B.V. | KvK: 12345678 | BTW: NL123456789B01', 105, footerY, { align: 'center' })
+  doc.text('StayCool Airco B.V. | KvK: 82065888 | BTW: NL003638007B69', 105, footerY, { align: 'center' })
   doc.text('info@staycoolairco.nl | 085-1234567', 105, footerY + 4, { align: 'center' })
   
   // Save the PDF
