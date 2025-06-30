@@ -6,7 +6,7 @@ import { CustomerData, SepaData } from '@/types/contract'
 import { submitContract } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/emailjs'
 import { sendToGoHighLevel } from '@/lib/gohighlevel'
-import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE } from '@/utils/pricing'
+import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, calculateOneTimePrice, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_ONETIME } from '@/utils/pricing'
 import { RateLimiter } from '@/utils/rate-limiter'
 import { formatIBAN, getBankName } from '@/utils/iban-validator'
 import { generateContractPDF } from '@/utils/pdf-generator'
@@ -44,7 +44,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
   const yearlyPrice = calculateYearlyPrice(monthlyPrice, false)
   const yearlyDiscount = customerData.paymentFrequency === 'jaarlijks' ? calculateDiscount(yearlyPrice) : 0
   const totalPrice = customerData.contractType === 'geen'
-    ? contractPrices.geen
+    ? calculateOneTimePrice(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)
     : customerData.paymentFrequency === 'jaarlijks'
       ? yearlyPrice - yearlyDiscount
       : monthlyPrice
@@ -244,7 +244,25 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                 </div>
               </div>
               
-              {customerData.contractType !== 'geen' && (
+              {customerData.contractType === 'geen' ? (
+                <div className="border-t pt-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Basis prijs</span>
+                    <span className="font-medium">€{contractPrices.geen},- per onderhoudsbeurt</span>
+                  </div>
+                  
+                  {customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Multi-split toeslag:</strong> {customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits} extra binnendelen × €{EXTRA_INDOOR_UNIT_ONETIME},-
+                      </p>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        Bij een multi-split systeem betaalt u €{EXTRA_INDOOR_UNIT_ONETIME},- per extra binnendeel
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Basis prijs</span>

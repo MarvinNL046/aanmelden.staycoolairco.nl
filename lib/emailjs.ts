@@ -1,6 +1,6 @@
 import emailjs from '@emailjs/browser'
 import { CustomerData, SepaData } from '@/types/contract'
-import { calculateMonthlyPrice, contractPrices } from '@/utils/pricing'
+import { calculateMonthlyPrice, calculateOneTimePrice, contractPrices } from '@/utils/pricing'
 
 // EmailJS configuration
 const SERVICE_ID = 'service_23v69t7'
@@ -31,7 +31,7 @@ export async function sendConfirmationEmail(data: EmailData) {
   )
   
   const totalPrice = customer.contractType === 'geen'
-    ? contractPrices.geen
+    ? calculateOneTimePrice(customer.numberOfOutdoorUnits, customer.numberOfIndoorUnits)
     : customer.paymentFrequency === 'jaarlijks'
       ? Math.round(monthlyPrice * 12 * 0.95) // 5% korting
       : monthlyPrice

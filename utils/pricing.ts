@@ -7,6 +7,7 @@ export const contractPrices = {
 }
 
 export const EXTRA_INDOOR_UNIT_PRICE = 7
+export const EXTRA_INDOOR_UNIT_ONETIME = 89.5 // Helft van €179
 
 export function calculateMonthlyPrice(
   contractType: ContractType,
@@ -38,4 +39,17 @@ export function calculateYearlyPrice(monthlyPrice: number, withDiscount: boolean
 
 export function calculateDiscount(yearlyPrice: number): number {
   return Math.round(yearlyPrice * 0.05)
+}
+
+export function calculateOneTimePrice(
+  outdoorUnits: number,
+  indoorUnits: number
+): number {
+  // Voor losse beurt: €179 voor eerste systeem
+  const basePrice = contractPrices.geen
+  
+  // Bij multi-split: extra €89,50 (helft van €179) per extra binnendeel
+  const extraIndoorUnits = Math.max(0, indoorUnits - outdoorUnits)
+  
+  return basePrice + (extraIndoorUnits * EXTRA_INDOOR_UNIT_ONETIME)
 }
