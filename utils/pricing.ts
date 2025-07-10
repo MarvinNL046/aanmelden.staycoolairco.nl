@@ -6,7 +6,8 @@ export const contractPrices = {
   premium: 16
 }
 
-export const EXTRA_INDOOR_UNIT_PRICE = 7
+export const EXTRA_INDOOR_UNIT_PRICE = 7 // For display purposes (Basis package)
+export const EXTRA_INDOOR_UNIT_PRICE_PREMIUM = 11
 export const EXTRA_INDOOR_UNIT_ONETIME = 89.5 // Helft van €179
 
 export function calculateMonthlyPrice(
@@ -24,8 +25,11 @@ export function calculateMonthlyPrice(
   // Bereken extra binnendelen (meer binnen dan buiten)
   const extraIndoorUnits = Math.max(0, indoorUnits - outdoorUnits)
   
-  // Totaal: (aantal volledige systemen × basis prijs) + (extra binnendelen × €7)
-  return (fullSystems * basePrice) + (extraIndoorUnits * EXTRA_INDOOR_UNIT_PRICE)
+  // Bepaal de prijs per extra binnendeel op basis van contract type
+  const extraUnitPrice = contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE
+  
+  // Totaal: (aantal volledige systemen × basis prijs) + (extra binnendelen × extra prijs)
+  return (fullSystems * basePrice) + (extraIndoorUnits * extraUnitPrice)
 }
 
 export function calculateYearlyPrice(monthlyPrice: number, withDiscount: boolean = false): number {

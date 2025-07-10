@@ -7,7 +7,7 @@ import { submitContract } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/emailjs'
 import { sendToGoHighLevel } from '@/lib/gohighlevel'
 import { uploadContractPDF } from '@/lib/pdf-storage'
-import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, calculateOneTimePrice, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_ONETIME } from '@/utils/pricing'
+import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, calculateOneTimePrice, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_PRICE_PREMIUM, EXTRA_INDOOR_UNIT_ONETIME } from '@/utils/pricing'
 import { RateLimiter } from '@/utils/rate-limiter'
 import { formatIBAN, getBankName } from '@/utils/iban-validator'
 import { generateContractPDF } from '@/utils/pdf-generator'
@@ -386,7 +386,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                   {customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                       <p className="text-sm text-yellow-800">
-                        <strong>Multi-split toeslag:</strong> {customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits} extra binnendelen × €{EXTRA_INDOOR_UNIT_PRICE},-/mnd
+                        <strong>Multi-split toeslag:</strong> {customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits} extra binnendelen × €{customerData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE},-/mnd
                       </p>
                       <p className="text-xs text-yellow-700 mt-1">
                         Extra binnendelen worden toegevoegd aan multi-split systemen

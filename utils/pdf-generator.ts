@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { CustomerData, SepaData, ContractType } from '@/types/contract'
-import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE } from './pricing'
+import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_PRICE_PREMIUM } from './pricing'
 import { formatIBAN, getBankName } from './iban-validator'
 
 // Extend jsPDF type for autoTable
@@ -103,7 +103,8 @@ export function generateContractPDF(
     
     if (customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits) {
       const extraUnits = customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits
-      contractDetails.push(['Multi-split toeslag', `${extraUnits} extra binnendelen × €${EXTRA_INDOOR_UNIT_PRICE},-/mnd`])
+      const extraUnitPrice = customerData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE
+      contractDetails.push(['Multi-split toeslag', `${extraUnits} extra binnendelen × €${extraUnitPrice},-/mnd`])
     }
     
     if (customerData.paymentFrequency === 'jaarlijks') {
@@ -182,7 +183,7 @@ export function generateContractPDF(
   doc.setFontSize(8)
   doc.setTextColor(100, 100, 100)
   doc.text('StayCool Airco B.V. | KvK: 82065888 | BTW: NL003638007B69', 105, footerY, { align: 'center' })
-  doc.text('info@staycoolairco.nl | 085-1234567', 105, footerY + 4, { align: 'center' })
+  doc.text('info@staycoolairco.nl | 046 202 1430', 105, footerY + 4, { align: 'center' })
   
   // Save the PDF
   doc.save(`StayCool_Contract_${customerData.lastName}_${date.replace(/\//g, '-')}.pdf`)
@@ -293,7 +294,8 @@ export function generateContractPDFBuffer(
   // Show extra indoor unit price if applicable
   if (customerData.contractType !== 'geen' && customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits) {
     const extraUnits = customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits
-    contractDetails.push(['Extra binnendelen', `${extraUnits} x €${EXTRA_INDOOR_UNIT_PRICE},- = €${extraUnits * EXTRA_INDOOR_UNIT_PRICE},-`])
+    const extraUnitPrice = customerData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE
+    contractDetails.push(['Extra binnendelen', `${extraUnits} x €${extraUnitPrice},- = €${extraUnits * extraUnitPrice},-`])
   }
   
   contractDetails.push(['', '']) // Empty row
@@ -372,7 +374,7 @@ export function generateContractPDFBuffer(
   doc.setFontSize(8)
   doc.setTextColor(100, 100, 100)
   doc.text('StayCool Airco B.V. | KvK: 82065888 | BTW: NL003638007B69', 105, footerY, { align: 'center' })
-  doc.text('info@staycoolairco.nl | 085-1234567', 105, footerY + 4, { align: 'center' })
+  doc.text('info@staycoolairco.nl | 046 202 1430', 105, footerY + 4, { align: 'center' })
   
   // Return the PDF as ArrayBuffer
   return doc.output('arraybuffer')

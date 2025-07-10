@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { CustomerData, PaymentFrequency } from '@/types/contract'
 import PaymentFrequencySelector from './PaymentFrequency'
 import Tooltip, { InfoIcon } from './Tooltip'
-import { calculateMonthlyPrice, EXTRA_INDOOR_UNIT_PRICE } from '@/utils/pricing'
+import { calculateMonthlyPrice, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_PRICE_PREMIUM } from '@/utils/pricing'
 import NumberInput from './NumberInput'
 import PricePreview from './PricePreview'
 
@@ -82,6 +82,19 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Terug naar pakketkeuze
+        </button>
+      </div>
+      
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Uw gegevens</h2>
       <p className="text-gray-600 mb-6">Vul uw contactgegevens in voor het onderhoudscontract</p>
       <p className="text-sm text-gray-500 mb-8"><span className="text-red-500">*</span> Verplichte velden</p>
@@ -323,7 +336,7 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
           <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>Multi-split systeem gedetecteerd:</strong> U heeft {formData.numberOfIndoorUnits - formData.numberOfOutdoorUnits} extra 
-              binnendelen. Deze worden berekend tegen €{EXTRA_INDOOR_UNIT_PRICE},-/maand per stuk.
+              binnendelen. Deze worden berekend tegen €{formData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE},-/maand per stuk.
             </p>
           </div>
         )}
