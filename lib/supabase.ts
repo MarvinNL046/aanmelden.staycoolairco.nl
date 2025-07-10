@@ -12,10 +12,12 @@ export const supabase = supabaseUrl && supabaseAnonKey
 interface ContractSubmission {
   customer: CustomerData
   sepa: SepaData | null
+  contractId: string
+  pdfUrl?: string | null
 }
 
 export async function submitContract(data: ContractSubmission) {
-  const { customer, sepa } = data
+  const { customer, sepa, contractId, pdfUrl } = data
   
   const contractData = {
     first_name: customer.firstName,
@@ -33,6 +35,12 @@ export async function submitContract(data: ContractSubmission) {
     iban: sepa?.iban || null,
     account_holder: sepa?.accountHolder || null,
     mandate_date: sepa?.mandateDate || null,
+    customer_number: customer.customerNumber || null,
+    last_quote_number: customer.lastQuoteNumber || null,
+    last_invoice_number: customer.lastInvoiceNumber || null,
+    contract_id: contractId,
+    pdf_url: pdfUrl || null,
+    pdf_generated_at: pdfUrl ? new Date().toISOString() : null,
     created_at: new Date().toISOString()
   }
   

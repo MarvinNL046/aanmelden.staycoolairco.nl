@@ -13,10 +13,12 @@ emailjs.init(PUBLIC_KEY)
 interface EmailData {
   customer: CustomerData
   sepa: SepaData | null
+  contractId?: string
+  pdfUrl?: string | null
 }
 
 export async function sendConfirmationEmail(data: EmailData) {
-  const { customer, sepa } = data
+  const { customer, sepa, contractId, pdfUrl } = data
   
   const contractTypeNames = {
     geen: 'Geen contract (eenmalig)',
@@ -49,7 +51,7 @@ export async function sendConfirmationEmail(data: EmailData) {
   const templateParams = {
     // Voor EmailJS template
     email: customer.email || '', // Dit matcht {{email}} in je template
-    order_id: `OC-${Date.now()}`, // Uniek contract nummer
+    order_id: contractId || `OC-${Date.now()}`, // Uniek contract nummer
     
     // Klant gegevens
     to_name: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
@@ -72,6 +74,9 @@ export async function sendConfirmationEmail(data: EmailData) {
     // SEPA gegevens
     iban: (customer.contractType !== 'geen' && sepa?.iban) ? sepa.iban : '',
     account_holder: (customer.contractType !== 'geen' && sepa?.accountHolder) ? sepa.accountHolder : '',
+    
+    // PDF link
+    pdf_url: pdfUrl || '',
     
     // Extra informatie
     service: serviceDetails || ''

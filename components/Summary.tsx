@@ -6,6 +6,7 @@ import { CustomerData, SepaData } from '@/types/contract'
 import { submitContract } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/emailjs'
 import { sendToGoHighLevel } from '@/lib/gohighlevel'
+import { uploadContractPDF } from '@/lib/pdf-storage'
 import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, calculateOneTimePrice, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_ONETIME } from '@/utils/pricing'
 import { RateLimiter } from '@/utils/rate-limiter'
 import { formatIBAN, getBankName } from '@/utils/iban-validator'
@@ -37,6 +38,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
   const [error, setError] = useState('')
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null)
   const [contractId, setContractId] = useState<string>('')
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
 
   const monthlyPrice = calculateMonthlyPrice(
     customerData.contractType,
@@ -78,16 +80,35 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       const generatedContractId = `OC-${Date.now()}`
       setContractId(generatedContractId)
       
+      // Generate and upload PDF
+      let uploadedPdfUrl: string | null = null
+      try {
+        uploadedPdfUrl = await uploadContractPDF(
+          customerData,
+          customerData.contractType !== 'geen' ? sepaData : null,
+          generatedContractId
+        )
+        console.log('PDF uploaded successfully:', uploadedPdfUrl)
+        setPdfUrl(uploadedPdfUrl)
+      } catch (pdfError) {
+        console.error('PDF upload failed:', pdfError)
+        // Continue even if PDF upload fails
+      }
+      
       // Submit to database
       await submitContract({
         customer: customerData,
-        sepa: customerData.contractType !== 'geen' ? sepaData : null
+        sepa: customerData.contractType !== 'geen' ? sepaData : null,
+        contractId: generatedContractId,
+        pdfUrl: uploadedPdfUrl
       })
       
-      // Send confirmation email
+      // Send confirmation email with PDF link
       const emailResult = await sendConfirmationEmail({
         customer: customerData,
-        sepa: customerData.contractType !== 'geen' ? sepaData : null
+        sepa: customerData.contractType !== 'geen' ? sepaData : null,
+        contractId: generatedContractId,
+        pdfUrl: uploadedPdfUrl
       })
       
       if (!emailResult.success) {
@@ -141,6 +162,25 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
         </p>
         
         <div className="space-y-3">
+          {pdfUrl && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-800 mb-2">
+                Uw contract is veilig opgeslagen. U kunt het altijd terugvinden via de link in uw bevestigingsmail.
+              </p>
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-blue-600 hover:text-blue-800 underline text-sm"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Contract online bekijken
+              </a>
+            </div>
+          )}
+          
           <button
             onClick={() => generateContractPDF(customerData, customerData.contractType !== 'geen' ? sepaData : null)}
             className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
