@@ -34,12 +34,23 @@ export async function uploadContractPDF(
       return null
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get public URL instead of signed URL
+    const { data: publicUrlData } = supabase.storage
       .from('contracts')
       .getPublicUrl(fileName)
 
-    return publicUrl
+    if (!publicUrlData?.publicUrl) {
+      console.error('Error getting public URL')
+      return null
+    }
+
+    console.log('PDF uploaded successfully:', {
+      fileName,
+      publicUrl: publicUrlData.publicUrl,
+      timestamp: new Date().toISOString()
+    })
+
+    return publicUrlData.publicUrl
   } catch (error) {
     console.error('Error generating/uploading PDF:', error)
     return null
@@ -52,9 +63,16 @@ export async function getContractPDFUrl(contractId: string): Promise<string | nu
   }
 
   const fileName = `${contractId}/contract.pdf`
-  const { data: { publicUrl } } = supabase.storage
+  
+  // Get public URL instead of signed URL
+  const { data: publicUrlData } = supabase.storage
     .from('contracts')
     .getPublicUrl(fileName)
 
-  return publicUrl
+  if (!publicUrlData?.publicUrl) {
+    console.error('Error getting public URL')
+    return null
+  }
+
+  return publicUrlData.publicUrl
 }
