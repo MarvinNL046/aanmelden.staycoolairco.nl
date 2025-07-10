@@ -17,7 +17,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <a 
-                  href="https://staycoolairco.nl/privacy-policy" 
+                  href="https://staycoolairco.nl/privacy" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline"
@@ -27,7 +27,7 @@ export default function Footer() {
               </li>
               <li>
                 <a 
-                  href="https://staycoolairco.nl/algemene-voorwaarden" 
+                  href="https://staycoolairco.nl/voorwaarden" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline"

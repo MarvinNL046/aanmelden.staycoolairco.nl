@@ -11,6 +11,7 @@ import { RateLimiter } from '@/utils/rate-limiter'
 import { formatIBAN, getBankName } from '@/utils/iban-validator'
 import { generateContractPDF } from '@/utils/pdf-generator'
 import SuccessAnimation from './SuccessAnimation'
+import LoadingOverlay from './LoadingOverlay'
 
 // Dynamic import voor reCAPTCHA
 const ReCAPTCHA = dynamic(() => import('react-google-recaptcha'), { ssr: false })
@@ -175,6 +176,8 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
 
   return (
     <div>
+      <LoadingOverlay show={isSubmitting} message="Contract wordt aangemaakt..." />
+      
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Controleer uw gegevens</h2>
       <p className="text-gray-600 mb-8">Controleer alle gegevens voordat u het contract definitief maakt</p>
       
@@ -210,6 +213,24 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                   {customerData.postalCode} {customerData.city}
                 </p>
               </div>
+              {customerData.customerNumber && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Klantnummer</p>
+                  <p className="font-medium text-gray-900">{customerData.customerNumber}</p>
+                </div>
+              )}
+              {customerData.lastQuoteNumber && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Laatste offertenummer</p>
+                  <p className="font-medium text-gray-900">{customerData.lastQuoteNumber}</p>
+                </div>
+              )}
+              {customerData.lastInvoiceNumber && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Laatste factuurnummer</p>
+                  <p className="font-medium text-gray-900">{customerData.lastInvoiceNumber}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

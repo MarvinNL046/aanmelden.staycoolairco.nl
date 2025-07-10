@@ -57,6 +57,11 @@ export async function sendConfirmationEmail(data: EmailData) {
     phone: customer.phone,
     city: customer.city,
     
+    // Klant identificatie
+    customer_number: customer.customerNumber || '',
+    last_quote_number: customer.lastQuoteNumber || '',
+    last_invoice_number: customer.lastInvoiceNumber || '',
+    
     // Contract details
     contract_type: contractTypeNames[customer.contractType],
     outdoor_units: customer.numberOfOutdoorUnits.toString(),

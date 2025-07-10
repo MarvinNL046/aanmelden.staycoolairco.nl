@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { SepaData } from '@/types/contract'
 import { validateIBAN, formatIBAN, getBankName } from '@/utils/iban-validator'
 
@@ -19,6 +19,12 @@ export default function SepaForm({ data, onSubmit, onBack }: Props) {
   const [errors, setErrors] = useState<FormErrors>({})
   const [agreed, setAgreed] = useState(false)
   const [bankName, setBankName] = useState<string | null>(null)
+  const ibanFieldRef = useRef<HTMLInputElement>(null)
+  
+  // Auto-focus IBAN field when component mounts
+  useEffect(() => {
+    ibanFieldRef.current?.focus()
+  }, [])
 
   const validate = () => {
     const newErrors: FormErrors = {}
@@ -75,23 +81,30 @@ export default function SepaForm({ data, onSubmit, onBack }: Props) {
           IBAN
         </label>
         <input
+          ref={ibanFieldRef}
           type="text"
           name="iban"
           value={formatIBAN(formData.iban)}
           onChange={(e) => {
-            const cleanedValue = e.target.value.replace(/\s/g, '').toUpperCase()
-            setFormData({
-              ...formData,
-              iban: cleanedValue
-            })
-            setErrors({ ...errors, iban: undefined })
+            // Allow typing with spaces, clean it in the background
+            const rawValue = e.target.value
+            const cleanedValue = rawValue.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
             
-            // Check bank name
-            if (cleanedValue.length >= 8) {
-              const bank = getBankName(cleanedValue)
-              setBankName(bank)
-            } else {
-              setBankName(null)
+            // Only update if valid characters
+            if (rawValue === '' || /^[A-Za-z0-9\s]*$/.test(rawValue)) {
+              setFormData({
+                ...formData,
+                iban: cleanedValue
+              })
+              setErrors({ ...errors, iban: undefined })
+              
+              // Check bank name
+              if (cleanedValue.length >= 8) {
+                const bank = getBankName(cleanedValue)
+                setBankName(bank)
+              } else {
+                setBankName(null)
+              }
             }
           }}
           placeholder="NL00 BANK 0000 0000 00"

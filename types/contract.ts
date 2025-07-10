@@ -22,6 +22,9 @@ export interface CustomerData {
   numberOfIndoorUnits: number
   contractType: ContractType
   paymentFrequency: PaymentFrequency
+  customerNumber?: string
+  lastQuoteNumber?: string
+  lastInvoiceNumber?: string
 }
 
 export interface SepaData {

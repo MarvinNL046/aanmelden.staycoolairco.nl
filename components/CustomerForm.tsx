@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CustomerData, PaymentFrequency } from '@/types/contract'
 import PaymentFrequencySelector from './PaymentFrequency'
 import Tooltip, { InfoIcon } from './Tooltip'
@@ -21,6 +21,12 @@ type FormErrors = {
 export default function CustomerForm({ data, onSubmit, onBack }: Props) {
   const [formData, setFormData] = useState<CustomerData>(data)
   const [errors, setErrors] = useState<FormErrors>({})
+  const firstFieldRef = useRef<HTMLInputElement>(null)
+  
+  // Auto-focus first field when component mounts
+  useEffect(() => {
+    firstFieldRef.current?.focus()
+  }, [])
 
   const validate = () => {
     const newErrors: FormErrors = {}
@@ -30,8 +36,19 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
     if (!formData.email.trim()) newErrors.email = 'Email is verplicht'
     if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is ongeldig'
     if (!formData.phone.trim()) newErrors.phone = 'Telefoonnummer is verplicht'
+    
+    // Check if at least one identification field is filled
+    const hasCustomerNumber = formData.customerNumber && formData.customerNumber.trim()
+    const hasQuoteNumber = formData.lastQuoteNumber && formData.lastQuoteNumber.trim()
+    const hasInvoiceNumber = formData.lastInvoiceNumber && formData.lastInvoiceNumber.trim()
+    
+    if (!hasCustomerNumber && !hasQuoteNumber && !hasInvoiceNumber) {
+      newErrors.customerNumber = 'Vul minimaal één identificatienummer in (klantnummer, offertenummer of factuurnummer)'
+    }
+    
     if (!formData.address.trim()) newErrors.address = 'Adres is verplicht'
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postcode is verplicht'
+    else if (!/^\d{4}\s?[A-Z]{2}$/i.test(formData.postalCode.trim())) newErrors.postalCode = 'Ongeldige postcode (bijv. 1234 AB)'
     if (!formData.city.trim()) newErrors.city = 'Plaats is verplicht'
     if (formData.numberOfOutdoorUnits < 1) newErrors.numberOfOutdoorUnits = 'Minimum 1 buitendeel'
     if (formData.numberOfIndoorUnits < 1) newErrors.numberOfIndoorUnits = 'Minimum 1 binnendeel'
@@ -75,6 +92,7 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
             Voornaam <span className="text-red-500">*</span>
           </label>
           <input
+            ref={firstFieldRef}
             type="text"
             name="firstName"
             value={formData.firstName}
@@ -143,6 +161,63 @@ export default function CustomerForm({ data, onSubmit, onBack }: Props) {
             <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
           )}
         </div>
+      </div>
+      
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Klantidentificatie</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Vul minimaal één van onderstaande nummers in. Dit abonnement is alleen beschikbaar voor bestaande klanten.
+        </p>
+        
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Klantnummer
+            </label>
+            <input
+              type="text"
+              name="customerNumber"
+              value={formData.customerNumber || ''}
+              onChange={handleChange}
+              placeholder="bijv. 12345"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.customerNumber ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Laatste offertenummer
+            </label>
+            <input
+              type="text"
+              name="lastQuoteNumber"
+              value={formData.lastQuoteNumber || ''}
+              onChange={handleChange}
+              placeholder="bijv. OFF-2024-001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Laatste factuurnummer
+            </label>
+            <input
+              type="text"
+              name="lastInvoiceNumber"
+              value={formData.lastInvoiceNumber || ''}
+              onChange={handleChange}
+              placeholder="bijv. INV-2024-001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        
+        {errors.customerNumber && (
+          <p className="text-red-500 text-sm mt-2">{errors.customerNumber}</p>
+        )}
       </div>
       
       <div className="mb-4">
