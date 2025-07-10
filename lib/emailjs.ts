@@ -48,14 +48,14 @@ export async function sendConfirmationEmail(data: EmailData) {
   
   const templateParams = {
     // Voor EmailJS template
-    email: customer.email, // Dit matcht {{email}} in je template
+    email: customer.email || '', // Dit matcht {{email}} in je template
     order_id: `OC-${Date.now()}`, // Uniek contract nummer
     
     // Klant gegevens
-    to_name: `${customer.firstName} ${customer.lastName}`,
-    from_email: customer.email,
-    phone: customer.phone,
-    city: customer.city,
+    to_name: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+    from_email: customer.email || '',
+    phone: customer.phone || '',
+    city: customer.city || '',
     
     // Klant identificatie
     customer_number: customer.customerNumber || '',
@@ -63,19 +63,22 @@ export async function sendConfirmationEmail(data: EmailData) {
     last_invoice_number: customer.lastInvoiceNumber || '',
     
     // Contract details
-    contract_type: contractTypeNames[customer.contractType],
-    outdoor_units: customer.numberOfOutdoorUnits.toString(),
-    indoor_units: customer.numberOfIndoorUnits.toString(),
-    payment_frequency: customer.contractType !== 'geen' ? customer.paymentFrequency : '',
-    total_price: priceText,
+    contract_type: contractTypeNames[customer.contractType] || '',
+    outdoor_units: (customer.numberOfOutdoorUnits || 0).toString(),
+    indoor_units: (customer.numberOfIndoorUnits || 0).toString(),
+    payment_frequency: customer.contractType !== 'geen' ? (customer.paymentFrequency || '') : '',
+    total_price: priceText || '',
     
     // SEPA gegevens
-    iban: sepa?.iban || '',
-    account_holder: sepa?.accountHolder || '',
+    iban: (customer.contractType !== 'geen' && sepa?.iban) ? sepa.iban : '',
+    account_holder: (customer.contractType !== 'geen' && sepa?.accountHolder) ? sepa.accountHolder : '',
     
     // Extra informatie
-    service: serviceDetails
+    service: serviceDetails || ''
   }
+  
+  // Debug log om te zien welke data wordt verzonden
+  console.log('Email template params:', templateParams)
   
   try {
     const response = await emailjs.send(
@@ -87,6 +90,7 @@ export async function sendConfirmationEmail(data: EmailData) {
     return { success: true, response }
   } catch (error) {
     console.error('Email send failed:', error)
+    console.error('Template params were:', templateParams)
     return { success: false, error }
   }
 }
