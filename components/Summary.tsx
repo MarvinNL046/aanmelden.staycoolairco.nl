@@ -169,7 +169,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
               </p>
               <a
                 href={pdfUrl}
-                download={`Contract_${customerData.contractType === 'huur' ? 'Huur' : 'Koop'}_${new Date().toLocaleDateString('nl-NL').replace(/\//g, '-')}.pdf`}
+                download={`Contract_${customerData.contractType}_${new Date().toLocaleDateString('nl-NL').replace(/\//g, '-')}.pdf`}
                 className="inline-flex items-center text-blue-600 hover:text-blue-800 underline text-sm"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,18 +185,30 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
               if (pdfUrl) {
                 // Download from Supabase URL
                 try {
-                  const response = await fetch(pdfUrl);
+                  const response = await fetch(pdfUrl, {
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: {
+                      'Accept': 'application/pdf'
+                    }
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+                  
                   const blob = await response.blob();
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `Contract_${customerData.contractType === 'huur' ? 'Huur' : 'Koop'}_${new Date().toLocaleDateString('nl-NL').replace(/\//g, '-')}.pdf`;
+                  a.download = `Contract_${customerData.contractType}_${new Date().toLocaleDateString('nl-NL').replace(/\//g, '-')}.pdf`;
                   document.body.appendChild(a);
                   a.click();
                   window.URL.revokeObjectURL(url);
                   document.body.removeChild(a);
                 } catch (error) {
-                  console.error('Error downloading PDF:', error);
+                  console.error('Error downloading PDF from Supabase:', error);
+                  console.log('Falling back to local PDF generation');
                   // Fallback to generating new PDF
                   generateContractPDF(customerData, customerData.contractType !== 'geen' ? sepaData : null);
                 }

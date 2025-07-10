@@ -1,23 +1,33 @@
--- Fix storage policies for proper CORS access
--- Drop existing policies
-DROP POLICY IF EXISTS "Allow authenticated uploads" ON storage.objects;
-DROP POLICY IF EXISTS "Allow public reads" ON storage.objects;
-DROP POLICY IF EXISTS "Allow uploads" ON storage.objects;
-DROP POLICY IF EXISTS "Allow reads" ON storage.objects;
+-- Fix Storage Bucket Permissions for Contracts
+-- This script ensures that the contracts bucket allows public read access
 
--- Create new policies with proper permissions
--- Allow anonymous uploads (for the form that doesn't require auth)
-CREATE POLICY "Allow public uploads" ON storage.objects
-FOR INSERT TO anon, authenticated
-WITH CHECK (bucket_id = 'contracts');
+-- First, drop existing policies if they exist
+DROP POLICY IF EXISTS "Allow public read access" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated insert" ON storage.objects;
+DROP POLICY IF EXISTS "Allow service role full access" ON storage.objects;
 
--- Allow anyone to read PDFs - this is crucial for signed URLs to work
-CREATE POLICY "Allow public reads" ON storage.objects
-FOR SELECT TO anon, authenticated
+-- Create new policies for the contracts bucket
+-- Allow anyone to read PDFs (public access)
+CREATE POLICY "Allow public read access" ON storage.objects
+FOR SELECT 
 USING (bucket_id = 'contracts');
 
--- Verify the policies
-SELECT * FROM pg_policies 
-WHERE tablename = 'objects' 
-AND schemaname = 'storage' 
-AND policyname IN ('Allow public uploads', 'Allow public reads');
+-- Allow authenticated users to upload PDFs
+CREATE POLICY "Allow authenticated insert" ON storage.objects
+FOR INSERT 
+WITH CHECK (bucket_id = 'contracts' AND auth.role() = 'authenticated');
+
+-- Allow service role full access (for backend operations)
+CREATE POLICY "Allow service role full access" ON storage.objects
+FOR ALL 
+USING (bucket_id = 'contracts' AND auth.role() = 'service_role');
+
+-- Update bucket configuration to ensure it's public
+UPDATE storage.buckets 
+SET public = true 
+WHERE id = 'contracts';
+
+-- Verify the bucket settings
+SELECT id, name, public, file_size_limit, allowed_mime_types
+FROM storage.buckets
+WHERE id = 'contracts';
