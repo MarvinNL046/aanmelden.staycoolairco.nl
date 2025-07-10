@@ -76,8 +76,8 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
     submitLimiter.recordAttempt()
     
     try {
-      // Generate contract ID
-      const generatedContractId = `OC-${Date.now()}`
+      // Generate contract ID with UUID for security
+      const generatedContractId = `OC-${crypto.randomUUID()}`
       setContractId(generatedContractId)
       
       // Generate and upload PDF

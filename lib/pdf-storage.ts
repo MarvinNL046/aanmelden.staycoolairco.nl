@@ -34,23 +34,23 @@ export async function uploadContractPDF(
       return null
     }
 
-    // Get public URL instead of signed URL
-    const { data: publicUrlData } = supabase.storage
+    // Create a signed URL that expires in 1 year
+    const { data: signedUrlData, error: urlError } = await supabase.storage
       .from('contracts')
-      .getPublicUrl(fileName)
+      .createSignedUrl(fileName, 365 * 24 * 60 * 60) // 1 year expiry
 
-    if (!publicUrlData?.publicUrl) {
-      console.error('Error getting public URL')
+    if (urlError || !signedUrlData?.signedUrl) {
+      console.error('Error creating signed URL:', urlError)
       return null
     }
 
     console.log('PDF uploaded successfully:', {
       fileName,
-      publicUrl: publicUrlData.publicUrl,
+      signedUrl: 'Generated (hidden for security)',
       timestamp: new Date().toISOString()
     })
 
-    return publicUrlData.publicUrl
+    return signedUrlData.signedUrl
   } catch (error) {
     console.error('Error generating/uploading PDF:', error)
     return null
@@ -64,15 +64,15 @@ export async function getContractPDFUrl(contractId: string): Promise<string | nu
 
   const fileName = `${contractId}/contract.pdf`
   
-  // Get public URL instead of signed URL
-  const { data: publicUrlData } = supabase.storage
+  // Create a signed URL that expires in 1 year
+  const { data: signedUrlData, error } = await supabase.storage
     .from('contracts')
-    .getPublicUrl(fileName)
+    .createSignedUrl(fileName, 365 * 24 * 60 * 60) // 1 year expiry
 
-  if (!publicUrlData?.publicUrl) {
-    console.error('Error getting public URL')
+  if (error || !signedUrlData?.signedUrl) {
+    console.error('Error creating signed URL:', error)
     return null
   }
 
-  return publicUrlData.publicUrl
+  return signedUrlData.signedUrl
 }
