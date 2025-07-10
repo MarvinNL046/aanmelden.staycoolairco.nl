@@ -69,6 +69,10 @@ export async function sendConfirmationEmail(data: EmailData) {
     payment_frequency: customer.contractType !== 'geen' ? customer.paymentFrequency : '',
     total_price: priceText,
     
+    // SEPA gegevens
+    iban: sepa?.iban || '',
+    account_holder: sepa?.accountHolder || '',
+    
     // Extra informatie
     service: serviceDetails
   }
