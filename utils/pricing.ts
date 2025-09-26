@@ -57,10 +57,10 @@ export function calculateMonthlyPrice(
 }
 
 export function calculateYearlyPrice(monthlyPrice: number, withDiscount: boolean = false): number {
-  const yearlyPrice = monthlyPrice * 12
+  const yearlyPrice = Math.round(monthlyPrice * 12 * 100) / 100
   if (withDiscount) {
     const discount = Math.round(yearlyPrice * 0.05) // 5% korting
-    return yearlyPrice - discount
+    return Math.round(yearlyPrice - discount)
   }
   return yearlyPrice
 }
