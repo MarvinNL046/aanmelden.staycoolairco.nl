@@ -18,7 +18,7 @@ export default function PaymentFrequencySelector({
   disabled = false 
 }: Props) {
   const monthlyTotal = monthlyPrice // Already calculated total
-  const yearlyTotal = monthlyTotal * 12
+  const yearlyTotal = Math.round(monthlyTotal * 12)
   const yearlyDiscount = Math.round(yearlyTotal * 0.05) // 5% korting bij jaarlijkse betaling
   const yearlyDiscountedPrice = yearlyTotal - yearlyDiscount
 
@@ -49,7 +49,7 @@ export default function PaymentFrequencySelector({
           </div>
           
           <div className="text-2xl font-bold text-blue-600 mb-1">
-            €{monthlyTotal},-/mnd
+            €{monthlyTotal.toFixed(2).replace(/\.00$/, '')},-/mnd
           </div>
           <p className="text-sm text-gray-600">
             Totaal per jaar: €{yearlyTotal},-
