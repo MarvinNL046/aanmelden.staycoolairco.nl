@@ -57,10 +57,11 @@ export function calculateMonthlyPrice(
 }
 
 export function calculateYearlyPrice(monthlyPrice: number, withDiscount: boolean = false): number {
-  const yearlyPrice = Math.round(monthlyPrice * 12 * 100) / 100
+  // Vermenigvuldig eerst met 12, dan pas afronden om floating point errors te voorkomen
+  const yearlyPrice = Math.round(monthlyPrice * 12)
   if (withDiscount) {
     const discount = Math.round(yearlyPrice * 0.05) // 5% korting
-    return Math.round(yearlyPrice - discount)
+    return yearlyPrice - discount
   }
   return yearlyPrice
 }
