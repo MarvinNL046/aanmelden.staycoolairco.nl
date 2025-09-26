@@ -7,7 +7,19 @@ import { submitContract } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/emailjs'
 import { sendToGoHighLevel } from '@/lib/gohighlevel'
 import { uploadContractPDF } from '@/lib/pdf-storage'
-import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, calculateOneTimePrice, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_PRICE_PREMIUM, EXTRA_INDOOR_UNIT_ONETIME } from '@/utils/pricing'
+import { 
+  calculateMonthlyPrice, 
+  calculateYearlyPrice, 
+  calculateDiscount, 
+  calculateOneTimePrice, 
+  calculateQuantityDiscount,
+  calculateWeightedPoints,
+  qualifiesForQuantityDiscount,
+  contractPrices, 
+  EXTRA_INDOOR_UNIT_PRICE, 
+  EXTRA_INDOOR_UNIT_PRICE_PREMIUM, 
+  EXTRA_INDOOR_UNIT_ONETIME 
+} from '@/utils/pricing'
 import { RateLimiter } from '@/utils/rate-limiter'
 import { formatIBAN, getBankName } from '@/utils/iban-validator'
 import { generateContractPDF } from '@/utils/pdf-generator'
@@ -53,6 +65,20 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
     : customerData.paymentFrequency === 'jaarlijks'
       ? yearlyPrice - yearlyDiscount
       : monthlyPrice
+      
+  const hasQuantityDiscount = qualifiesForQuantityDiscount(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const quantityDiscount = calculateQuantityDiscount(
+    customerData.contractType,
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const weightedPoints = calculateWeightedPoints(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
 
   const handleDownloadPDF = () => {
     generateContractPDF(customerData, customerData.contractType !== 'geen' ? sepaData : null)
@@ -368,6 +394,17 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                       </p>
                     </div>
                   )}
+                  
+                  {hasQuantityDiscount && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p className="text-sm text-green-800">
+                        <strong>Kwantumkorting (10%):</strong> -€{quantityDiscount},-
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        U krijgt 10% korting vanaf 3+ airco's
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="border-t pt-4 space-y-3">
@@ -399,12 +436,29 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                     <span className="font-medium capitalize">{customerData.paymentFrequency}</span>
                   </div>
                   
+                  {hasQuantityDiscount && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p className="text-sm text-green-800">
+                        <strong>Kwantumkorting (10%):</strong> -€{(quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)).toFixed(2).replace(/\.00$/, '')}
+                        {customerData.paymentFrequency === 'jaarlijks' ? '/jaar' : '/mnd'}
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        U krijgt 10% korting vanaf 3+ airco's
+                      </p>
+                    </div>
+                  )}
+                  
                   {customerData.paymentFrequency === 'jaarlijks' && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <div className="flex justify-between text-green-800">
                         <span className="text-sm">5% jaarlijkse korting</span>
                         <span className="font-medium">-€{yearlyDiscount},-</span>
                       </div>
+                      {hasQuantityDiscount && (
+                        <p className="text-xs text-green-700 mt-2">
+                          Totale korting: 10% kwantum + 5% jaarkorting = 15% korting
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

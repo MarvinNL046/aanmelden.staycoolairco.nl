@@ -1,7 +1,19 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { CustomerData, SepaData, ContractType } from '@/types/contract'
-import { calculateMonthlyPrice, calculateYearlyPrice, calculateDiscount, contractPrices, EXTRA_INDOOR_UNIT_PRICE, EXTRA_INDOOR_UNIT_PRICE_PREMIUM } from './pricing'
+import { 
+  calculateMonthlyPrice, 
+  calculateYearlyPrice, 
+  calculateDiscount, 
+  calculateOneTimePrice,
+  calculateQuantityDiscount,
+  calculateWeightedPoints,
+  qualifiesForQuantityDiscount,
+  contractPrices, 
+  EXTRA_INDOOR_UNIT_PRICE, 
+  EXTRA_INDOOR_UNIT_PRICE_PREMIUM,
+  EXTRA_INDOOR_UNIT_ONETIME 
+} from './pricing'
 import { formatIBAN, getBankName } from './iban-validator'
 
 // Extend jsPDF type for autoTable
@@ -33,8 +45,23 @@ export function generateContractPDF(
   )
   const yearlyPrice = calculateYearlyPrice(monthlyPrice, false)
   const yearlyDiscount = customerData.paymentFrequency === 'jaarlijks' ? calculateDiscount(yearlyPrice) : 0
+  
+  const hasQuantityDiscount = qualifiesForQuantityDiscount(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const quantityDiscount = calculateQuantityDiscount(
+    customerData.contractType,
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const weightedPoints = calculateWeightedPoints(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  
   const totalPrice = customerData.contractType === 'geen'
-    ? contractPrices.geen
+    ? calculateOneTimePrice(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)
     : customerData.paymentFrequency === 'jaarlijks'
       ? yearlyPrice - yearlyDiscount
       : monthlyPrice
@@ -91,7 +118,24 @@ export function generateContractPDF(
     ['Binnendelen', customerData.numberOfIndoorUnits.toString()]
   ]
   
-  if (customerData.contractType !== 'geen') {
+  if (customerData.contractType === 'geen') {
+    const completeUnits = Math.min(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)
+    const extraUnits = Math.max(0, customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits)
+    
+    contractDetails.push(['Prijs per complete unit', `€${contractPrices.geen},-`])
+    
+    if (completeUnits > 1) {
+      contractDetails.push(['', `${completeUnits} complete units × €${contractPrices.geen},- = €${completeUnits * contractPrices.geen},-`])
+    }
+    
+    if (extraUnits > 0) {
+      contractDetails.push(['Multi-split toeslag', `${extraUnits} extra binnendelen × €${EXTRA_INDOOR_UNIT_ONETIME},-`])
+    }
+    
+    if (hasQuantityDiscount) {
+      contractDetails.push(['Kwantumkorting (10%)', `-€${quantityDiscount},-`])
+    }
+  } else {
     contractDetails.push(['Basis prijs', `€${contractPrices[customerData.contractType]},- per complete airco unit/mnd`])
     contractDetails.push(['', 'Complete airco unit = 1 buitendeel + 1 binnendeel'])
     
@@ -107,8 +151,16 @@ export function generateContractPDF(
       contractDetails.push(['Multi-split toeslag', `${extraUnits} extra binnendelen × €${extraUnitPrice},-/mnd`])
     }
     
+    if (hasQuantityDiscount) {
+      const discountAmount = quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)
+      contractDetails.push(['Kwantumkorting (10%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? ' per jaar' : ' per maand'}`])
+    }
+    
     if (customerData.paymentFrequency === 'jaarlijks') {
       contractDetails.push(['Jaarlijkse korting (5%)', `-€${yearlyDiscount},-`])
+      if (hasQuantityDiscount) {
+        contractDetails.push(['', 'Totale korting: 15% (10% kwantum + 5% jaar)'])
+      }
     }
   }
   
@@ -205,8 +257,23 @@ export function generateContractPDFBuffer(
   )
   const yearlyPrice = calculateYearlyPrice(monthlyPrice, false)
   const yearlyDiscount = customerData.paymentFrequency === 'jaarlijks' ? calculateDiscount(yearlyPrice) : 0
+  
+  const hasQuantityDiscount = qualifiesForQuantityDiscount(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const quantityDiscount = calculateQuantityDiscount(
+    customerData.contractType,
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  const weightedPoints = calculateWeightedPoints(
+    customerData.numberOfOutdoorUnits,
+    customerData.numberOfIndoorUnits
+  )
+  
   const totalPrice = customerData.contractType === 'geen'
-    ? contractPrices.geen
+    ? calculateOneTimePrice(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)
     : customerData.paymentFrequency === 'jaarlijks'
       ? yearlyPrice - yearlyDiscount
       : monthlyPrice
@@ -279,23 +346,50 @@ export function generateContractPDFBuffer(
     contractDetails.push(['Betalingsfrequentie', customerData.paymentFrequency === 'jaarlijks' ? 'Jaarlijks' : 'Maandelijks'])
   }
   
-  // Add pricing
+  // Add pricing details
   if (customerData.contractType === 'geen') {
-    contractDetails.push(['Prijs per onderhoudsbeurt', `€${totalPrice},-`])
-  } else if (customerData.paymentFrequency === 'jaarlijks') {
-    contractDetails.push(['Prijs per jaar', `€${totalPrice},-`])
-    if (yearlyDiscount > 0) {
-      contractDetails.push(['Korting (5%)', `-€${yearlyDiscount},-`])
+    const completeUnits = Math.min(customerData.numberOfOutdoorUnits, customerData.numberOfIndoorUnits)
+    const extraUnits = Math.max(0, customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits)
+    const baseAmount = completeUnits * contractPrices.geen + extraUnits * EXTRA_INDOOR_UNIT_ONETIME
+    
+    if (completeUnits > 1 || extraUnits > 0) {
+      contractDetails.push(['Complete units', `${completeUnits} x €${contractPrices.geen},- = €${completeUnits * contractPrices.geen},-`])
     }
+    if (extraUnits > 0) {
+      contractDetails.push(['Extra binnendelen', `${extraUnits} x €${EXTRA_INDOOR_UNIT_ONETIME},- = €${extraUnits * EXTRA_INDOOR_UNIT_ONETIME},-`])
+    }
+    if (hasQuantityDiscount) {
+      contractDetails.push(['Subtotaal', `€${baseAmount},-`])
+      contractDetails.push(['Kwantumkorting (10%)', `-€${quantityDiscount},-`])
+    }
+    contractDetails.push(['Totaal per beurt', `€${totalPrice},-`])
   } else {
-    contractDetails.push(['Prijs per maand', `€${totalPrice},-`])
-  }
-  
-  // Show extra indoor unit price if applicable
-  if (customerData.contractType !== 'geen' && customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits) {
-    const extraUnits = customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits
-    const extraUnitPrice = customerData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE
-    contractDetails.push(['Extra binnendelen', `${extraUnits} x €${extraUnitPrice},- = €${extraUnits * extraUnitPrice},-`])
+    // Show base pricing
+    contractDetails.push(['Basis prijs', `€${contractPrices[customerData.contractType]},- per airco/mnd`])
+    
+    // Show extra indoor unit price if applicable
+    if (customerData.numberOfIndoorUnits > customerData.numberOfOutdoorUnits) {
+      const extraUnits = customerData.numberOfIndoorUnits - customerData.numberOfOutdoorUnits
+      const extraUnitPrice = customerData.contractType === 'premium' ? EXTRA_INDOOR_UNIT_PRICE_PREMIUM : EXTRA_INDOOR_UNIT_PRICE
+      contractDetails.push(['Extra binnendelen', `${extraUnits} x €${extraUnitPrice},- = €${extraUnits * extraUnitPrice},-/mnd`])
+    }
+    
+    // Show quantity discount if applicable
+    if (hasQuantityDiscount) {
+      const discountAmount = quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)
+      contractDetails.push(['Kwantumkorting (10%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? '/jaar' : '/mnd'}`])
+    }
+    
+    // Show yearly discount if applicable
+    if (customerData.paymentFrequency === 'jaarlijks') {
+      contractDetails.push(['Jaarlijkse korting (5%)', `-€${yearlyDiscount},-`])
+      if (hasQuantityDiscount) {
+        contractDetails.push(['', 'Totale korting: 15%'])
+      }
+      contractDetails.push(['Totaal per jaar', `€${totalPrice},-`])
+    } else {
+      contractDetails.push(['Totaal per maand', `€${totalPrice},-`])
+    }
   }
   
   contractDetails.push(['', '']) // Empty row
