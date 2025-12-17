@@ -22,7 +22,7 @@
     "@types/react-google-recaptcha": "^2.1.9",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
-    "next": "^15.3.4",
+    "next": "^15.5.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-google-recaptcha": "^3.1.0",
