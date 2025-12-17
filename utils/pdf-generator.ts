@@ -473,3 +473,259 @@ export function generateContractPDFBuffer(
   // Return the PDF as ArrayBuffer
   return doc.output('arraybuffer')
 }
+
+/**
+ * Generates a blank contract template PDF with empty fields
+ * For custom/manual contracts
+ */
+export function generateBlankContractPDF(): void {
+  const doc = new jsPDF()
+  const date = new Date().toLocaleDateString('nl-NL')
+
+  // Header - same as regular contract
+  doc.setFontSize(24)
+  doc.setTextColor(30, 144, 255)
+  doc.text('StayCool Airco', 20, 20)
+
+  doc.setFontSize(16)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Onderhoudscontract', 20, 30)
+
+  doc.setFontSize(10)
+  doc.setTextColor(100, 100, 100)
+  doc.text('Contract ID: ____________________', 20, 40)
+  doc.text(`Datum: ${date}`, 20, 45)
+
+  // Personal data section - matching original style
+  doc.setFontSize(14)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Persoonlijke gegevens', 20, 60)
+
+  const personalData = [
+    ['Naam', ''],
+    ['Email', ''],
+    ['Telefoon', ''],
+    ['Adres', '']
+  ]
+
+  autoTable(doc, {
+    startY: 65,
+    head: [],
+    body: personalData,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 2
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 40 },
+      1: { cellWidth: 130 }
+    },
+    didDrawCell: function(data: any) {
+      // Draw underline for empty cells
+      if (data.column.index === 1) {
+        doc.setDrawColor(200, 200, 200)
+        doc.line(
+          data.cell.x + 2,
+          data.cell.y + data.cell.height - 2,
+          data.cell.x + data.cell.width - 2,
+          data.cell.y + data.cell.height - 2
+        )
+      }
+    }
+  })
+
+  // Contract details section
+  const contractY = (doc as any).lastAutoTable.finalY + 15
+  doc.setFontSize(14)
+  doc.text('Contract details', 20, contractY)
+
+  const contractDetails = [
+    ['Type contract', '☐ Geen contract   ☐ Basis pakket   ☐ Premium pakket'],
+    ['Buitendelen', ''],
+    ['Binnendelen', ''],
+    ['Betalingsfrequentie', '☐ Maandelijks   ☐ Jaarlijks'],
+    ['', ''],
+    ['Prijs per unit', '€ __________ per __________'],
+    ['Extra binnendelen', '_____ × € __________ = € __________'],
+    ['Korting', '€ __________ (__________________)'],
+    ['', ''],
+    ['Totaalbedrag', '€ __________ per __________']
+  ]
+
+  autoTable(doc, {
+    startY: contractY + 5,
+    head: [],
+    body: contractDetails,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 2
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 60 },
+      1: { cellWidth: 110 }
+    },
+    didParseCell: function(data: any) {
+      // Style the total row
+      if (data.row.index === contractDetails.length - 1) {
+        data.cell.styles.fontSize = 12
+        data.cell.styles.fontStyle = 'bold'
+      }
+    },
+    didDrawCell: function(data: any) {
+      // Draw underline for specific empty cells
+      if (data.column.index === 1 && (data.row.index === 1 || data.row.index === 2)) {
+        doc.setDrawColor(200, 200, 200)
+        doc.line(
+          data.cell.x + 2,
+          data.cell.y + data.cell.height - 2,
+          data.cell.x + 40,
+          data.cell.y + data.cell.height - 2
+        )
+      }
+    }
+  })
+
+  // Opmerkingen section
+  const notesY = (doc as any).lastAutoTable.finalY + 15
+  doc.setFontSize(14)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Opmerkingen', 20, notesY)
+
+  doc.setDrawColor(200, 200, 200)
+  for (let i = 0; i < 6; i++) {
+    doc.line(20, notesY + 8 + (i * 7), 190, notesY + 8 + (i * 7))
+  }
+
+  // New page for SEPA section
+  doc.addPage()
+
+  // SEPA section header on new page
+  doc.setFontSize(24)
+  doc.setTextColor(30, 144, 255)
+  doc.text('StayCool Airco', 20, 20)
+
+  doc.setFontSize(16)
+  doc.setTextColor(0, 0, 0)
+  doc.text('SEPA Machtiging', 20, 30)
+
+  doc.setFontSize(10)
+  doc.setTextColor(100, 100, 100)
+  doc.text('Doorlopende machtiging voor automatische incasso', 20, 40)
+
+  // SEPA section - matching original style
+  const sepaY = 55
+  doc.setFontSize(14)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Gegevens rekeninghouder', 20, sepaY)
+
+  const sepaDetails = [
+    ['IBAN', ''],
+    ['Bank', ''],
+    ['Naam rekeninghouder', ''],
+    ['Adres', ''],
+    ['Postcode + Plaats', '']
+  ]
+
+  autoTable(doc, {
+    startY: sepaY + 5,
+    head: [],
+    body: sepaDetails,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 3
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 60 },
+      1: { cellWidth: 110 }
+    },
+    didDrawCell: function(data: any) {
+      if (data.column.index === 1) {
+        doc.setDrawColor(200, 200, 200)
+        doc.line(
+          data.cell.x + 2,
+          data.cell.y + data.cell.height - 2,
+          data.cell.x + data.cell.width - 2,
+          data.cell.y + data.cell.height - 2
+        )
+      }
+    }
+  })
+
+  // Machtiging tekst
+  const machtigingY = (doc as any).lastAutoTable.finalY + 15
+  doc.setFontSize(10)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Door ondertekening van dit formulier geeft u toestemming aan StayCool Airco B.V.', 20, machtigingY)
+  doc.text('om doorlopende incasso-opdrachten te sturen naar uw bank om het verschuldigde', 20, machtigingY + 5)
+  doc.text('bedrag van uw rekening af te schrijven.', 20, machtigingY + 10)
+
+  // Handtekening sectie
+  const sigSectionY = machtigingY + 25
+  doc.setFontSize(14)
+  doc.text('Handtekening', 20, sigSectionY)
+
+  const signatureData = [
+    ['Plaats', ''],
+    ['Datum', ''],
+    ['Handtekening', '']
+  ]
+
+  autoTable(doc, {
+    startY: sigSectionY + 5,
+    head: [],
+    body: signatureData,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 3
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 60 },
+      1: { cellWidth: 110 }
+    },
+    didDrawCell: function(data: any) {
+      if (data.column.index === 1) {
+        doc.setDrawColor(200, 200, 200)
+        if (data.row.index === 2) {
+          // Signature box
+          doc.rect(data.cell.x + 2, data.cell.y + 2, 100, 25)
+        } else {
+          // Underline
+          doc.line(
+            data.cell.x + 2,
+            data.cell.y + data.cell.height - 2,
+            data.cell.x + data.cell.width - 2,
+            data.cell.y + data.cell.height - 2
+          )
+        }
+      }
+    }
+  })
+
+  // SEPA mandate info
+  const mandateY = (doc as any).lastAutoTable.finalY + 20
+  doc.setFontSize(9)
+  doc.setTextColor(80, 80, 80)
+  doc.text('Incassant:', 20, mandateY)
+  doc.text('StayCool Airco B.V.', 60, mandateY)
+  doc.text('Incassant ID:', 20, mandateY + 5)
+  doc.text('NL18ZZZ820658880000', 60, mandateY + 5)
+  doc.text('Kenmerk machtiging:', 20, mandateY + 10)
+  doc.text('____________________', 60, mandateY + 10)
+
+  // Footer - same as original
+  const footerY = 270
+  doc.setDrawColor(200, 200, 200)
+  doc.line(20, footerY - 5, 190, footerY - 5)
+
+  doc.setFontSize(8)
+  doc.setTextColor(100, 100, 100)
+  doc.text('StayCool Airco B.V. | KvK: 82065888 | BTW: NL003638007B69', 105, footerY, { align: 'center' })
+  doc.text('info@staycoolairco.nl | 046 202 1430', 105, footerY + 4, { align: 'center' })
+
+  // Save the PDF
+  doc.save(`StayCool_Blanco_Contract_${date.replace(/\//g, '-')}.pdf`)
+}
