@@ -48,18 +48,48 @@ export default function ContractForm() {
     mandateDate: new Date() // Use current date when actually submitting
   })
   const [showSaveIndicator, setShowSaveIndicator] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
-  // Save to localStorage whenever data changes
+  // Rehydrate local state from localStorage after mount.
+  // useLocalStorage starts with defaults (to avoid SSR hydration mismatch) and
+  // only reads storage in its own effect, so we mirror that here and flip
+  // `hydrated` once — preventing the save-effect from clobbering stored progress.
   useEffect(() => {
+    if (hydrated) return
+    try {
+      const raw = typeof window !== 'undefined'
+        ? window.localStorage.getItem('contractFormData')
+        : null
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed?.currentStep) setCurrentStep(parsed.currentStep)
+        if (parsed?.contractType) setContractType(parsed.contractType)
+        if (parsed?.customerData) setCustomerData(parsed.customerData)
+        if (parsed?.sepaData) {
+          setSepaData({
+            ...parsed.sepaData,
+            mandateDate: new Date()
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Failed to rehydrate contract form:', err)
+    }
+    setHydrated(true)
+  }, [hydrated])
+
+  // Save to localStorage whenever data changes — but only after hydration,
+  // so we don't clobber stored progress with the initial default values.
+  useEffect(() => {
+    if (!hydrated) return
     setSavedData({
       currentStep,
       contractType,
       customerData,
       sepaData
     })
-    // Show save indicator
     setShowSaveIndicator(true)
-  }, [currentStep, contractType, customerData, sepaData])
+  }, [hydrated, currentStep, contractType, customerData, sepaData])
 
   const handleContractSelect = (type: ContractType) => {
     setContractType(type)
