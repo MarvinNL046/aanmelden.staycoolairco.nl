@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useConvex, useMutation, useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { CustomerData, SepaData } from '@/types/contract'
-import { submitContract } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/emailjs'
-import { sendToGoHighLevel } from '@/lib/gohighlevel'
 import { uploadContractPDF } from '@/lib/pdf-storage'
 import { 
   calculateMonthlyPrice, 
@@ -50,7 +51,15 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
   const [error, setError] = useState('')
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null)
   const [contractId, setContractId] = useState<string>('')
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfStorageId, setPdfStorageId] = useState<Id<'_storage'> | null>(null)
+
+  const convex = useConvex()
+  const generateUploadUrl = useMutation(api.contracts.generateUploadUrl)
+  const submitContract = useMutation(api.contracts.submit)
+  const pdfUrl = useQuery(
+    api.contracts.getPdfUrl,
+    pdfStorageId ? { storageId: pdfStorageId } : 'skip'
+  ) ?? null
 
   const monthlyPrice = calculateMonthlyPrice(
     customerData.contractType,
@@ -105,53 +114,73 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       // Generate contract ID with UUID for security
       const generatedContractId = `OC-${crypto.randomUUID()}`
       setContractId(generatedContractId)
-      
-      // Generate and upload PDF
-      let uploadedPdfUrl: string | null = null
+
+      // Generate and upload PDF to Convex storage
+      let uploadedStorageId: Id<'_storage'> | null = null
       try {
-        uploadedPdfUrl = await uploadContractPDF(
+        const uploadUrl = await generateUploadUrl()
+        uploadedStorageId = await uploadContractPDF(
+          uploadUrl,
           customerData,
           customerData.contractType !== 'geen' ? sepaData : null,
           generatedContractId
         )
-        console.log('PDF uploaded successfully:', uploadedPdfUrl)
-        setPdfUrl(uploadedPdfUrl)
+        if (uploadedStorageId) setPdfStorageId(uploadedStorageId)
       } catch (pdfError) {
         console.error('PDF upload failed:', pdfError)
-        // Continue even if PDF upload fails
       }
-      
-      // Submit to database
+
+      const sepa = customerData.contractType !== 'geen' ? sepaData : null
+
+      // Submit contract to Convex
       await submitContract({
-        customer: customerData,
-        sepa: customerData.contractType !== 'geen' ? sepaData : null,
         contractId: generatedContractId,
-        pdfUrl: uploadedPdfUrl
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
+        email: customerData.email,
+        phone: customerData.phone,
+        address: customerData.address,
+        postalCode: customerData.postalCode,
+        city: customerData.city,
+        numberOfAircos: customerData.numberOfAircos,
+        numberOfOutdoorUnits: customerData.numberOfOutdoorUnits,
+        numberOfIndoorUnits: customerData.numberOfIndoorUnits,
+        contractType: customerData.contractType,
+        paymentFrequency: customerData.paymentFrequency,
+        iban: sepa?.iban || undefined,
+        accountHolder: sepa?.accountHolder || undefined,
+        mandateDate: sepa?.mandateDate ? new Date(sepa.mandateDate).toISOString() : undefined,
+        signature: sepa?.signature || undefined,
+        customerNumber: customerData.customerNumber || undefined,
+        lastQuoteNumber: customerData.lastQuoteNumber || undefined,
+        lastInvoiceNumber: customerData.lastInvoiceNumber || undefined,
+        pdfStorageId: uploadedStorageId ?? undefined,
       })
-      
-      // Send confirmation email with PDF link
+
+      // For email/CRM we need a URL; fetch one imperatively if we have a storageId
+      let emailPdfUrl: string | null = null
+      if (uploadedStorageId) {
+        try {
+          emailPdfUrl = await convex.query(api.contracts.getPdfUrl, {
+            storageId: uploadedStorageId,
+          })
+        } catch (urlError) {
+          console.error('Failed to fetch PDF URL for email:', urlError)
+        }
+      }
+
+      // Send confirmation email
       const emailResult = await sendConfirmationEmail({
         customer: customerData,
-        sepa: customerData.contractType !== 'geen' ? sepaData : null,
+        sepa,
         contractId: generatedContractId,
-        pdfUrl: uploadedPdfUrl
+        pdfUrl: emailPdfUrl
       })
       
       if (!emailResult.success) {
         console.error('Email verzenden mislukt, maar contract is wel opgeslagen')
       }
-      
-      // Send to GoHighLevel CRM
-      const ghlResult = await sendToGoHighLevel(
-        customerData,
-        customerData.contractType !== 'geen' ? sepaData : null,
-        generatedContractId
-      )
-      
-      if (!ghlResult.success) {
-        console.error('GoHighLevel sync mislukt, maar contract is wel opgeslagen')
-      }
-      
+
       setSubmitted(true)
       
       // Clear localStorage na succesvolle submit
