@@ -29,6 +29,15 @@ export default defineSchema({
     lastInvoiceNumber: v.optional(v.string()),
     pdfStorageId: v.optional(v.id("_storage")),
     pdfGeneratedAt: v.optional(v.string()),
+    // ── Stripe (online betalen/machtigen) ──
+    // Gezet door de webhook zodra de klant via Stripe Checkout betaalt.
+    // "betaald" = eenmalige betaling gelukt; "actief" = abonnement gestart.
+    stripeStatus: v.optional(
+      v.union(v.literal("betaald"), v.literal("actief"))
+    ),
+    stripeCheckoutSessionId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    stripePaidAt: v.optional(v.string()),
   })
     .index("by_contract_id", ["contractId"])
     .index("by_email", ["email"]),

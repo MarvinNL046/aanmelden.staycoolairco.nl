@@ -52,6 +52,8 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null)
   const [contractId, setContractId] = useState<string>('')
   const [pdfStorageId, setPdfStorageId] = useState<Id<'_storage'> | null>(null)
+  const [stripeConfigured, setStripeConfigured] = useState(false)
+  const [redirectingToStripe, setRedirectingToStripe] = useState(false)
 
   const convex = useConvex()
   const generateUploadUrl = useMutation(api.contracts.generateUploadUrl)
@@ -182,7 +184,19 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
       }
 
       setSubmitted(true)
-      
+
+      // Stripe-betaalknop op het succes-scherm: alleen tonen wanneer de
+      // server geconfigureerd is (dormant zonder STRIPE_SECRET_KEY).
+      try {
+        const probe = await fetch('/api/stripe/checkout')
+        if (probe.ok) {
+          const data = (await probe.json()) as { configured?: boolean }
+          setStripeConfigured(data.configured === true)
+        }
+      } catch {
+        // Geen Stripe-probe = geen knop; de aanmelding zelf is al binnen.
+      }
+
       // Clear localStorage na succesvolle submit
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem('contractFormData')
@@ -210,12 +224,48 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
           U ontvangt binnen enkele minuten een bevestiging per email.
         </p>
         <p className="text-sm text-gray-500 mb-8">
-          {customerData.contractType !== 'geen' 
+          {customerData.contractType !== 'geen'
             ? 'De afschrijving zal plaatsvinden aan het einde van de maand tussen de 27ste en 28ste.'
             : 'Wij nemen contact met u op voor het plannen van de onderhoudsbeurt.'
           }
         </p>
-        
+
+        {stripeConfigured && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+            <p className="text-sm text-green-800 mb-3">
+              {customerData.contractType !== 'geen'
+                ? 'Wilt u het meteen helemaal afronden? Regel de automatische betaling direct online — dan hoeft u verder niets meer te doen.'
+                : 'U kunt de onderhoudsbeurt ook direct online betalen.'}
+            </p>
+            <button
+              onClick={async () => {
+                setRedirectingToStripe(true)
+                try {
+                  const response = await fetch('/api/stripe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contractId }),
+                  })
+                  const data = (await response.json()) as { url?: string }
+                  if (response.ok && data.url) {
+                    window.location.href = data.url
+                    return
+                  }
+                  setRedirectingToStripe(false)
+                } catch {
+                  setRedirectingToStripe(false)
+                }
+              }}
+              disabled={redirectingToStripe}
+              className="w-full bg-green-600 text-white font-medium rounded-lg px-6 py-3 hover:bg-green-700 transition-colors disabled:opacity-60"
+            >
+              {redirectingToStripe
+                ? 'Even geduld…'
+                : 'Direct online regelen (o.a. iDEAL)'}
+            </button>
+          </div>
+        )}
+
         <div className="space-y-3">
           {pdfUrl && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">

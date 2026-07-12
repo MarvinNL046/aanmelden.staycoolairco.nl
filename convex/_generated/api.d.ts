@@ -9,6 +9,8 @@
  */
 
 import type * as contracts from "../contracts.js";
+import type * as http from "../http.js";
+import type * as stripeWebhook from "../stripeWebhook.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +20,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   contracts: typeof contracts;
+  http: typeof http;
+  stripeWebhook: typeof stripeWebhook;
 }>;
 
 /**
