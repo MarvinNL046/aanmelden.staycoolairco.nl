@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 export const generateUploadUrl = mutation({
@@ -38,10 +39,22 @@ export const submit = mutation({
   },
   returns: v.id("contracts"),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("contracts", {
+    const id = await ctx.db.insert("contracts", {
       ...args,
       pdfGeneratedAt: args.pdfStorageId ? new Date().toISOString() : undefined,
     });
+    // Achtergrondtaken (best-effort, raken de aanmelding zelf nooit):
+    // 1. abonnementen doorzetten naar cashflow als abonnee-in-wacht;
+    // 2. interne notificatiemail naar kantoor.
+    await ctx.scheduler.runAfter(0, internal.cashflowSync.pushSignup, {
+      contractId: args.contractId,
+    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.confirmationEmail.sendInternalNotice,
+      { contractId: args.contractId },
+    );
+    return id;
   },
 });
 

@@ -48,6 +48,11 @@ http.route({
         sessionId: event.sessionId,
         subscriptionId: event.subscriptionId,
       });
+      // Stripe incasseert zelf → de wachtende ING-regel in cashflow is
+      // overbodig; best-effort afvoeren (idempotent aan de cashflow-kant).
+      await ctx.scheduler.runAfter(0, internal.cashflowSync.cancelSignup, {
+        contractId: event.contractId,
+      });
       console.log(
         `stripe webhook: contract ${event.contractId} → ${status} (${outcome})`,
       );

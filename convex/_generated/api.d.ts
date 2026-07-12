@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as cashflowSync from "../cashflowSync.js";
 import type * as confirmationEmail from "../confirmationEmail.js";
 import type * as contracts from "../contracts.js";
 import type * as http from "../http.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cashflowSync: typeof cashflowSync;
   confirmationEmail: typeof confirmationEmail;
   contracts: typeof contracts;
   http: typeof http;

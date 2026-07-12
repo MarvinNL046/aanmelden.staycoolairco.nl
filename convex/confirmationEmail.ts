@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { internalQuery } from "./_generated/server";
 import {
@@ -45,6 +45,76 @@ export const getForEmail = internalQuery({
       ? await ctx.storage.getUrl(contract.pdfStorageId)
       : null;
     return { contract, pdfUrl };
+  },
+});
+
+/**
+ * Interne notificatie naar kantoor bij elke nieuwe aanmelding — zodat
+ * niemand het Stripe-dashboard of cashflow hoeft te bewaken om te weten
+ * dat er iets binnenkwam. Best-effort (fouten alleen in de logs).
+ */
+export const sendInternalNotice = internalAction({
+  args: { contractId: v.string() },
+  handler: async (ctx, args) => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (apiKey === undefined || apiKey.length === 0) return;
+    const result = await ctx.runQuery(internal.confirmationEmail.getForEmail, {
+      contractId: args.contractId,
+    });
+    if (result === null) return;
+    const { contract } = result;
+    const typeLabel = CONTRACT_TYPE_NAMES[contract.contractType] ?? contract.contractType;
+    const monthly = calculateMonthlyPrice(
+      contract.contractType,
+      contract.numberOfOutdoorUnits,
+      contract.numberOfIndoorUnits,
+    );
+    const isSubscription = contract.contractType !== "geen";
+    const priceLine = !isSubscription
+      ? `€${calculateOneTimePrice(contract.numberOfOutdoorUnits, contract.numberOfIndoorUnits)},- eenmalig`
+      : contract.paymentFrequency === "jaarlijks"
+        ? `€${Math.round(monthly * 12 * 0.95)},- per jaar`
+        : `€${monthly},- per maand`;
+    const row = (label: string, value: string) =>
+      `<tr><td style="padding:4px 12px 4px 0;color:#666">${label}</td><td style="padding:4px 0"><strong>${escapeHtml(value)}</strong></td></tr>`;
+    const html = `<div style="font-family:system-ui,sans-serif;font-size:14px;color:#333;max-width:520px">
+<h2 style="color:#173a40">Nieuwe aanmelding onderhoudscontract</h2>
+<table style="border-collapse:collapse">
+${row("Contractnummer", contract.contractId)}
+${row("Type", typeLabel)}
+${row("Bedrag", priceLine)}
+${row("Naam", `${contract.firstName} ${contract.lastName}`.trim())}
+${row("E-mail", contract.email)}
+${row("Telefoon", contract.phone)}
+${row("Adres", `${contract.address}, ${contract.postalCode} ${contract.city}`)}
+${row("Units", `${contract.numberOfOutdoorUnits} buiten / ${contract.numberOfIndoorUnits} binnen`)}
+${isSubscription ? row("IBAN", contract.iban ?? "-") : ""}
+</table>
+${
+  isSubscription
+    ? `<p style="margin-top:16px;font-size:13px;color:#555">Deze aanmelding staat automatisch als <strong>abonnee-in-wacht</strong> in cashflow (Abonnees-pagina). Betaalt de klant online via Stripe, dan verdwijnt die regel vanzelf; anders daar even bevestigen zodat hij in de ING-batch meedraait.</p>`
+    : `<p style="margin-top:16px;font-size:13px;color:#555">Losse onderhoudsbeurt — plan een afspraak in en factureer na afloop.</p>`
+}
+</div>`;
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from:
+          process.env.EMAIL_FROM ?? "StayCool Airco <info@staycoolairco.nl>",
+        to: [process.env.INTERNAL_NOTICE_EMAIL ?? "info@staycoolairco.nl"],
+        subject: `Nieuwe aanmelding: ${typeLabel} — ${contract.firstName} ${contract.lastName} (${priceLine})`,
+        html,
+      }),
+    });
+    if (!response.ok) {
+      console.error(
+        `internal notice ${contract.contractId}: Resend ${response.status}: ${await response.text()}`,
+      );
+    }
   },
 });
 
