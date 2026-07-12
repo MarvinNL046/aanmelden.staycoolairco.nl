@@ -46,7 +46,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
           <div className="text-right">
             <span className="text-lg font-bold text-blue-600">€{oneTimePrice},-</span>
             {hasQuantityDiscount && (
-              <p className="text-xs text-green-600">10% kwantumkorting toegepast!</p>
+              <p className="text-xs text-green-600">5% kwantumkorting toegepast!</p>
             )}
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
                 Subtotaal: €{baseAmount},-
               </p>
               <p className="text-xs text-green-700">
-                Kwantumkorting (10%): -€{quantityDiscount},-
+                Kwantumkorting (5%): -€{quantityDiscount},-
               </p>
             </>
           )}
@@ -87,7 +87,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
             <>
               <span className="text-lg font-bold text-blue-600">€{monthlyPrice.toFixed(2).replace(/\.00$/, '')},-/mnd</span>
               {hasQuantityDiscount && (
-                <p className="text-xs text-green-600">10% kwantumkorting toegepast!</p>
+                <p className="text-xs text-green-600">5% kwantumkorting toegepast!</p>
               )}
             </>
           ) : (
@@ -95,7 +95,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
               <span className="text-lg font-bold text-blue-600">€{yearlyDiscounted},-/jaar</span>
               <p className="text-xs text-green-600">
                 Bespaar €{yearlyPrice - yearlyDiscounted},-
-                {hasQuantityDiscount && ' (10% kwantum + 5% jaarkorting)'}
+                {hasQuantityDiscount && ' (5% kwantum + 5% jaarkorting)'}
               </p>
             </>
           )}
@@ -118,7 +118,7 @@ export default function PricePreview({ contractType, outdoorUnits, indoorUnits, 
               Basis maandprijs: €{baseMonthlyPrice},-
             </p>
             <p className="text-xs text-green-700">
-              Kwantumkorting (10%): -€{(baseMonthlyPrice * 0.1).toFixed(2).replace(/\.00$/, '')}
+              Kwantumkorting (5%): -€{(baseMonthlyPrice * 0.05).toFixed(2).replace(/\.00$/, '')}
             </p>
           </>
         )}

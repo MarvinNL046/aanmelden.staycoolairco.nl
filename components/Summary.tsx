@@ -466,10 +466,10 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                   {hasQuantityDiscount && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <p className="text-sm text-green-800">
-                        <strong>Kwantumkorting (10%):</strong> -€{quantityDiscount},-
+                        <strong>Kwantumkorting (5%):</strong> -€{quantityDiscount},-
                       </p>
                       <p className="text-xs text-green-700 mt-1">
-                        U krijgt 10% korting vanaf 3+ airco's
+                        U krijgt 5% korting vanaf 3+ airco's
                       </p>
                     </div>
                   )}
@@ -507,11 +507,11 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                   {hasQuantityDiscount && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <p className="text-sm text-green-800">
-                        <strong>Kwantumkorting (10%):</strong> -€{(quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)).toFixed(2).replace(/\.00$/, '')}
+                        <strong>Kwantumkorting (5%):</strong> -€{(quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)).toFixed(2).replace(/\.00$/, '')}
                         {customerData.paymentFrequency === 'jaarlijks' ? '/jaar' : '/mnd'}
                       </p>
                       <p className="text-xs text-green-700 mt-1">
-                        U krijgt 10% korting vanaf 3+ airco's
+                        U krijgt 5% korting vanaf 3+ airco's
                       </p>
                     </div>
                   )}
@@ -524,7 +524,7 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
                       </div>
                       {hasQuantityDiscount && (
                         <p className="text-xs text-green-700 mt-2">
-                          Totale korting: 10% kwantum + 5% jaarkorting = 15% korting
+                          Totale korting: 5% kwantum + 5% jaarkorting
                         </p>
                       )}
                     </div>

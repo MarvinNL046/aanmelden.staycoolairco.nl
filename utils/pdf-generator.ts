@@ -133,7 +133,7 @@ export function generateContractPDF(
     }
     
     if (hasQuantityDiscount) {
-      contractDetails.push(['Kwantumkorting (10%)', `-€${quantityDiscount},-`])
+      contractDetails.push(['Kwantumkorting (5%)', `-€${quantityDiscount},-`])
     }
   } else {
     contractDetails.push(['Basis prijs', `€${contractPrices[customerData.contractType]},- per complete airco unit/mnd`])
@@ -153,13 +153,13 @@ export function generateContractPDF(
     
     if (hasQuantityDiscount) {
       const discountAmount = quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)
-      contractDetails.push(['Kwantumkorting (10%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? ' per jaar' : ' per maand'}`])
+      contractDetails.push(['Kwantumkorting (5%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? ' per jaar' : ' per maand'}`])
     }
     
     if (customerData.paymentFrequency === 'jaarlijks') {
       contractDetails.push(['Jaarlijkse korting (5%)', `-€${yearlyDiscount},-`])
       if (hasQuantityDiscount) {
-        contractDetails.push(['', 'Totale korting: 15% (10% kwantum + 5% jaar)'])
+        contractDetails.push(['', 'Totale korting: 5% kwantum + 5% jaar'])
       }
     }
   }
@@ -360,7 +360,7 @@ export function generateContractPDFBuffer(
     }
     if (hasQuantityDiscount) {
       contractDetails.push(['Subtotaal', `€${baseAmount},-`])
-      contractDetails.push(['Kwantumkorting (10%)', `-€${quantityDiscount},-`])
+      contractDetails.push(['Kwantumkorting (5%)', `-€${quantityDiscount},-`])
     }
     contractDetails.push(['Totaal per beurt', `€${totalPrice},-`])
   } else {
@@ -377,7 +377,7 @@ export function generateContractPDFBuffer(
     // Show quantity discount if applicable
     if (hasQuantityDiscount) {
       const discountAmount = quantityDiscount * (customerData.paymentFrequency === 'jaarlijks' ? 12 : 1)
-      contractDetails.push(['Kwantumkorting (10%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? '/jaar' : '/mnd'}`])
+      contractDetails.push(['Kwantumkorting (5%)', `-€${discountAmount.toFixed(2).replace(/\.00$/, '')}${customerData.paymentFrequency === 'jaarlijks' ? '/jaar' : '/mnd'}`])
     }
     
     // Show yearly discount if applicable

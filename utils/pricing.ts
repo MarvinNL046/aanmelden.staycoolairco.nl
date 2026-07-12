@@ -1,18 +1,18 @@
 import { ContractType } from '@/types/contract'
 
 export const contractPrices = {
-  geen: 179,
-  basis: 11,
+  geen: 189,
+  basis: 13,
   premium: 16
 }
 
-export const EXTRA_INDOOR_UNIT_PRICE = 7 // For display purposes (Basis package)
+export const EXTRA_INDOOR_UNIT_PRICE = 8 // For display purposes (Basis package)
 export const EXTRA_INDOOR_UNIT_PRICE_PREMIUM = 11
-export const EXTRA_INDOOR_UNIT_ONETIME = 89.5 // Helft van €179
+export const EXTRA_INDOOR_UNIT_ONETIME = 94.5 // Helft van €189
 
-// Kwantumkorting: 10% vanaf 3 gewogen punten
+// Kwantumkorting: 5% vanaf 3 gewogen punten
 export const QUANTITY_DISCOUNT_THRESHOLD = 3 // punten
-export const QUANTITY_DISCOUNT_PERCENTAGE = 0.10 // 10%
+export const QUANTITY_DISCOUNT_PERCENTAGE = 0.05 // 5% (verlaagd van 10%, jul 2026)
 
 // Bereken gewogen punten voor kwantumkorting
 // Complete unit = 1 punt, extra binnendeel = 0.5 punt
@@ -106,10 +106,10 @@ export function calculateOneTimePrice(
   // Bereken aantal complete units (1 buiten + 1 binnen = 1 complete unit)
   const completeUnits = Math.min(outdoorUnits, indoorUnits)
   
-  // Bij multi-split: extra €89,50 per extra binnendeel
+  // Bij multi-split: extra €94,50 per extra binnendeel
   const extraIndoorUnits = Math.max(0, indoorUnits - outdoorUnits)
   
-  // Basisbedrag: (aantal complete units × €179) + (extra binnendelen × €89,50)
+  // Basisbedrag: (aantal complete units × €189) + (extra binnendelen × €94,50)
   const baseAmount = (completeUnits * basePrice) + (extraIndoorUnits * EXTRA_INDOOR_UNIT_ONETIME)
   
   // Pas kwantumkorting toe als van toepassing

@@ -62,7 +62,7 @@ export type CheckoutPlan =
 
 /**
  * Vertaal een opgeslagen contract naar het Stripe-plan. Alle bestaande
- * prijsregels (kwantumkorting 10% vanaf 3 gewogen punten, extra
+ * prijsregels (kwantumkorting 5% vanaf 3 gewogen punten, extra
  * binnendelen, 5% jaarkorting) zitten al in utils/pricing.ts.
  */
 export function planForContract(input: ContractPricingInput): CheckoutPlan | null {

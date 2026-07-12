@@ -6,7 +6,7 @@ const contractOptions: ContractOption[] = [
   {
     id: 'geen',
     name: 'Geen contract',
-    price: 179,
+    price: 189,
     description: 'Eenmalige onderhoudsbeurt',
     features: [
       'Professionele onderhoudsbeurt',
@@ -19,8 +19,8 @@ const contractOptions: ContractOption[] = [
   {
     id: 'basis',
     name: 'Basis pakket',
-    price: 11,
-    description: '€11,- per maand per complete airco unit',
+    price: 13,
+    description: '€13,- per maand per complete airco unit',
     features: [
       'Jaarlijkse onderhoudsbeurt',
       'Arbeidsloon inbegrepen',
@@ -65,7 +65,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
         </p>
         <p className="text-sm text-blue-800">
           <span className="font-semibold">Multi-split voorbeeld:</span> Heeft u 1 buitendeel met 3 binnendelen? 
-          Dan betaalt u voor 1 complete unit + 2 extra binnendelen (€7,-/mnd bij Basis, €11,-/mnd bij Premium)
+          Dan betaalt u voor 1 complete unit + 2 extra binnendelen (€8,-/mnd bij Basis, €11,-/mnd bij Premium)
         </p>
       </div>
       
@@ -83,7 +83,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
             {option.id === 'basis' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                 <span className="bg-gradient-to-r from-green-400 to-green-500 text-green-900 text-sm font-bold px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap">
-                  €47 VOORDEEL
+                  €33 VOORDEEL
                 </span>
               </div>
             )}
@@ -189,7 +189,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start">
                 <span className="text-red-500 mr-2">•</span>
-                <span>€179,- per onderhoudsbeurt</span>
+                <span>€189,- per onderhoudsbeurt</span>
               </li>
               <li className="flex items-start">
                 <span className="text-red-500 mr-2">•</span>
@@ -220,7 +220,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
-                <span>Vanaf €11,- per maand (all-in)</span>
+                <span>Vanaf €13,- per maand (all-in)</span>
               </li>
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
@@ -244,8 +244,8 @@ export default function ContractSelection({ onSelect, selected }: Props) {
         
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            <strong>Rekenvoorbeeld:</strong> Zonder contract betaalt u €179,- voor onderhoud + €45,- per storing. 
-            Met een Basis contract (€132,-/jaar) bespaart u al €47,- op onderhoud én €45,- per storing!
+            <strong>Rekenvoorbeeld:</strong> Zonder contract betaalt u €189,- voor onderhoud + €45,- per storing. 
+            Met een Basis contract (€156,-/jaar) bespaart u al €33,- op onderhoud én €45,- per storing!
           </p>
         </div>
       </div>
