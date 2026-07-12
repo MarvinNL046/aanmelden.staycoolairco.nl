@@ -6,7 +6,6 @@ import { useConvex, useMutation, useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { CustomerData, SepaData } from '@/types/contract'
-import { sendConfirmationEmail } from '@/lib/emailjs'
 import { uploadContractPDF } from '@/lib/pdf-storage'
 import { 
   calculateMonthlyPrice, 
@@ -159,28 +158,18 @@ export default function Summary({ customerData, sepaData, onBack }: Props) {
         pdfStorageId: uploadedStorageId ?? undefined,
       })
 
-      // For email/CRM we need a URL; fetch one imperatively if we have a storageId
-      let emailPdfUrl: string | null = null
-      if (uploadedStorageId) {
-        try {
-          emailPdfUrl = await convex.query(api.contracts.getPdfUrl, {
-            storageId: uploadedStorageId,
-          })
-        } catch (urlError) {
-          console.error('Failed to fetch PDF URL for email:', urlError)
+      // Send confirmation email — server-side via Resend (Convex action).
+      // Faalt de mail, dan is dat zichtbaar in de Convex-logs; het
+      // contract zelf staat op dit punt al veilig in de database.
+      try {
+        const emailResult = await convex.action(api.confirmationEmail.send, {
+          contractId: generatedContractId,
+        })
+        if (!emailResult.sent) {
+          console.error('Email verzenden mislukt, maar contract is wel opgeslagen')
         }
-      }
-
-      // Send confirmation email
-      const emailResult = await sendConfirmationEmail({
-        customer: customerData,
-        sepa,
-        contractId: generatedContractId,
-        pdfUrl: emailPdfUrl
-      })
-      
-      if (!emailResult.success) {
-        console.error('Email verzenden mislukt, maar contract is wel opgeslagen')
+      } catch (emailError) {
+        console.error('Email verzenden mislukt, maar contract is wel opgeslagen', emailError)
       }
 
       setSubmitted(true)

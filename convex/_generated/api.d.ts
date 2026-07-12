@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as confirmationEmail from "../confirmationEmail.js";
 import type * as contracts from "../contracts.js";
 import type * as http from "../http.js";
 import type * as stripeWebhook from "../stripeWebhook.js";
@@ -19,6 +20,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  confirmationEmail: typeof confirmationEmail;
   contracts: typeof contracts;
   http: typeof http;
   stripeWebhook: typeof stripeWebhook;
