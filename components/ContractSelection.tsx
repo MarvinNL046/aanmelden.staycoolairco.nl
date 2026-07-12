@@ -193,7 +193,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
               </li>
               <li className="flex items-start">
                 <span className="text-red-500 mr-2">•</span>
-                <span>Voorrijkosten bij storing (€45,-)</span>
+                <span>Storingsbezoek €125,- eerste uur (incl. voorrijkosten)</span>
               </li>
               <li className="flex items-start">
                 <span className="text-red-500 mr-2">•</span>
@@ -244,8 +244,8 @@ export default function ContractSelection({ onSelect, selected }: Props) {
         
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            <strong>Rekenvoorbeeld:</strong> Zonder contract betaalt u €189,- voor onderhoud + €45,- per storing. 
-            Met een Basis contract (€156,-/jaar) bespaart u al €33,- op onderhoud én €45,- per storing!
+            <strong>Rekenvoorbeeld:</strong> Zonder contract betaalt u €189,- voor onderhoud + €125,- per storingsbezoek.
+            Met een Basis contract (€156,-/jaar) bespaart u al €33,- op onderhoud én de voorrijkosten bij elke storing!
           </p>
         </div>
       </div>
