@@ -91,9 +91,11 @@ ${row("Units", `${contract.numberOfOutdoorUnits} buiten / ${contract.numberOfInd
 ${isSubscription ? row("IBAN", contract.iban ?? "-") : ""}
 </table>
 ${
-  isSubscription
-    ? `<p style="margin-top:16px;font-size:13px;color:#555">Deze aanmelding staat automatisch als <strong>abonnee-in-wacht</strong> in cashflow (Abonnees-pagina). Betaalt de klant online via Stripe, dan verdwijnt die regel vanzelf; anders daar even bevestigen zodat hij in de ING-batch meedraait.</p>`
-    : `<p style="margin-top:16px;font-size:13px;color:#555">Losse onderhoudsbeurt — plan een afspraak in en factureer na afloop.</p>`
+  contract.stripeStatus !== undefined
+    ? `<p style="margin-top:16px;font-size:13px;color:#555">Direct via Stripe ${contract.stripeStatus === "actief" ? "gestart (abonnement)" : "betaald"} — Stripe incasseert zelf. ${isSubscription ? "De abonnee staat als <strong>Via Stripe</strong> in cashflow (Abonnees-pagina); koppel daar nog even het klantrecord." : "Plan de onderhoudsbeurt in — er hoeft niets meer gefactureerd te worden."}</p>`
+    : isSubscription
+      ? `<p style="margin-top:16px;font-size:13px;color:#555">Deze aanmelding staat automatisch als <strong>abonnee-in-wacht</strong> in cashflow (Abonnees-pagina). Betaalt de klant online via Stripe, dan verdwijnt die regel vanzelf; anders daar even bevestigen zodat hij in de ING-batch meedraait.</p>`
+      : `<p style="margin-top:16px;font-size:13px;color:#555">Losse onderhoudsbeurt — plan een afspraak in en factureer na afloop.</p>`
 }
 </div>`;
     const response = await fetch("https://api.resend.com/emails", {

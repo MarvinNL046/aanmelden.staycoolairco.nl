@@ -42,6 +42,44 @@ http.route({
       event.type === "checkout.session.async_payment_succeeded";
     if (settled) {
       const status = event.mode === "subscription" ? "actief" : "betaald";
+      if (event.direct) {
+        // /direct-funnel: het contract bestaat nog niet — nu aanmaken uit
+        // de sessiegegevens, daarna kantoor informeren en de abonnee als
+        // "Via Stripe" in cashflow zetten (geen ING-regel).
+        if (event.choices === undefined || event.customer === undefined) {
+          console.error(
+            `stripe webhook: direct contract ${event.contractId} mist keuzes of klantgegevens`,
+          );
+          return new Response("ok", { status: 200 });
+        }
+        const outcome = await ctx.runMutation(
+          internal.stripeWebhook.createFromDirectCheckout,
+          {
+            contractId: event.contractId,
+            status,
+            sessionId: event.sessionId,
+            subscriptionId: event.subscriptionId,
+            choices: event.choices,
+            customer: event.customer,
+          },
+        );
+        if (outcome === "created") {
+          await ctx.scheduler.runAfter(
+            0,
+            internal.confirmationEmail.sendInternalNotice,
+            { contractId: event.contractId },
+          );
+          await ctx.scheduler.runAfter(
+            0,
+            internal.cashflowSync.pushStripeSignup,
+            { contractId: event.contractId },
+          );
+        }
+        console.log(
+          `stripe webhook: direct contract ${event.contractId} → ${status} (${outcome})`,
+        );
+        return new Response("ok", { status: 200 });
+      }
       const outcome = await ctx.runMutation(internal.stripeWebhook.markStripe, {
         contractId: event.contractId,
         status,

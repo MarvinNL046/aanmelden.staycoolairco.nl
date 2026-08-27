@@ -20,11 +20,29 @@ function BedanktContent() {
   const searchParams = useSearchParams()
   const cancelled = searchParams.get('status') === 'geannuleerd'
   const contractId = searchParams.get('contract')
+  // /direct-funnel: bij annuleren is er (bewust) nog niets opgeslagen —
+  // andere boodschap dan bij het volledige formulier.
+  const direct = searchParams.get('flow') === 'direct'
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        {cancelled ? (
+        {cancelled && direct ? (
+          <>
+            <div className="text-5xl mb-4">↩️</div>
+            <h1 className="text-2xl font-semibold mb-3">
+              Betaling geannuleerd
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Er is niets vastgelegd of afgeschreven. U kunt op elk moment
+              opnieuw kiezen —{' '}
+              <Link href="/direct" className="text-blue-700 underline">
+                terug naar het keuzemenu
+              </Link>
+              .
+            </p>
+          </>
+        ) : cancelled ? (
           <>
             <div className="text-5xl mb-4">↩️</div>
             <h1 className="text-2xl font-semibold mb-3">

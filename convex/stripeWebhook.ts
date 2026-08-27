@@ -89,6 +89,24 @@ export async function verifyStripeSignature(
 
 // ─── Event-parsing ───────────────────────────────────────────────────────────
 
+/** Keuzes uit de /direct-funnel, door de checkout in de metadata gezet. */
+export type DirectChoices = {
+  contractType: "geen" | "basis" | "premium";
+  outdoorUnits: number;
+  indoorUnits: number;
+  paymentFrequency: string;
+};
+
+/** Klantgegevens die Stripe op de betaalpagina heeft uitgevraagd. */
+export type SessionCustomer = {
+  name: string;
+  email: string;
+  phone: string;
+  addressLine: string;
+  postalCode: string;
+  city: string;
+};
+
 export type ParsedEvent = {
   type: string;
   contractId: string | undefined;
@@ -96,7 +114,66 @@ export type ParsedEvent = {
   subscriptionId: string | undefined;
   paymentStatus: string | undefined;
   mode: string | undefined;
+  /** true = /direct-funnel: er bestaat nog geen contractrecord. */
+  direct: boolean;
+  choices: DirectChoices | undefined;
+  customer: SessionCustomer | undefined;
 };
+
+function str(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function parseChoices(
+  metadata: Record<string, unknown>,
+): DirectChoices | undefined {
+  const contractType = metadata.contractType;
+  if (
+    contractType !== "geen" &&
+    contractType !== "basis" &&
+    contractType !== "premium"
+  ) {
+    return undefined;
+  }
+  const outdoorUnits = Number(metadata.outdoorUnits);
+  const indoorUnits = Number(metadata.indoorUnits);
+  if (
+    !Number.isInteger(outdoorUnits) ||
+    !Number.isInteger(indoorUnits) ||
+    outdoorUnits < 1 ||
+    indoorUnits < 1
+  ) {
+    return undefined;
+  }
+  return {
+    contractType,
+    outdoorUnits,
+    indoorUnits,
+    paymentFrequency:
+      metadata.paymentFrequency === "jaarlijks" ? "jaarlijks" : "maandelijks",
+  };
+}
+
+function parseCustomer(
+  object: Record<string, unknown>,
+): SessionCustomer | undefined {
+  const details = object.customer_details;
+  if (typeof details !== "object" || details === null) return undefined;
+  const d = details as Record<string, unknown>;
+  const address = (d.address ?? {}) as Record<string, unknown>;
+  const email = str(d.email);
+  if (email.length === 0) return undefined;
+  const line1 = str(address.line1);
+  const line2 = str(address.line2);
+  return {
+    name: str(d.name),
+    email,
+    phone: str(d.phone),
+    addressLine: line2.length > 0 ? `${line1} ${line2}`.trim() : line1,
+    postalCode: str(address.postal_code),
+    city: str(address.city),
+  };
+}
 
 export function parseStripeEvent(rawBody: string): ParsedEvent | null {
   let event: unknown;
@@ -125,6 +202,9 @@ export function parseStripeEvent(rawBody: string): ParsedEvent | null {
         ? object.payment_status
         : undefined,
     mode: typeof object.mode === "string" ? object.mode : undefined,
+    direct: metadata.direct === "1",
+    choices: parseChoices(metadata),
+    customer: parseCustomer(object),
   };
 }
 
@@ -155,5 +235,69 @@ export const markStripe = internalMutation({
       stripePaidAt: new Date().toISOString(),
     });
     return "updated";
+  },
+});
+
+/**
+ * /direct-funnel: maak het contractrecord aan NA de betaling, uit de
+ * checkout-metadata (de keuzes) + de klantgegevens die Stripe heeft
+ * uitgevraagd. Idempotent op contractId (webhook-retries zijn een no-op).
+ * De naam wordt op de eerste spatie gesplitst — goed genoeg voor de
+ * administratie; kantoor ziet het volledige record in de notificatiemail.
+ */
+export const createFromDirectCheckout = internalMutation({
+  args: {
+    contractId: v.string(),
+    status: v.union(v.literal("betaald"), v.literal("actief")),
+    sessionId: v.optional(v.string()),
+    subscriptionId: v.optional(v.string()),
+    choices: v.object({
+      contractType: v.union(
+        v.literal("geen"),
+        v.literal("basis"),
+        v.literal("premium"),
+      ),
+      outdoorUnits: v.number(),
+      indoorUnits: v.number(),
+      paymentFrequency: v.string(),
+    }),
+    customer: v.object({
+      name: v.string(),
+      email: v.string(),
+      phone: v.string(),
+      addressLine: v.string(),
+      postalCode: v.string(),
+      city: v.string(),
+    }),
+  },
+  handler: async (ctx, args): Promise<"created" | "unchanged"> => {
+    const existing = await ctx.db
+      .query("contracts")
+      .withIndex("by_contract_id", (q) => q.eq("contractId", args.contractId))
+      .first();
+    if (existing !== null) return "unchanged";
+    const name = args.customer.name.trim();
+    const space = name.indexOf(" ");
+    const firstName = space === -1 ? name : name.slice(0, space);
+    const lastName = space === -1 ? "" : name.slice(space + 1);
+    await ctx.db.insert("contracts", {
+      contractId: args.contractId,
+      firstName,
+      lastName,
+      email: args.customer.email,
+      phone: args.customer.phone,
+      address: args.customer.addressLine,
+      postalCode: args.customer.postalCode,
+      city: args.customer.city,
+      numberOfOutdoorUnits: args.choices.outdoorUnits,
+      numberOfIndoorUnits: args.choices.indoorUnits,
+      contractType: args.choices.contractType,
+      paymentFrequency: args.choices.paymentFrequency,
+      stripeStatus: args.status,
+      stripeCheckoutSessionId: args.sessionId,
+      stripeSubscriptionId: args.subscriptionId,
+      stripePaidAt: new Date().toISOString(),
+    });
+    return "created";
   },
 });

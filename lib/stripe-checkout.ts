@@ -140,13 +140,78 @@ export function buildCheckoutSessionBody(input: CheckoutSessionInput): string {
   return encodeStripeForm(base)
 }
 
+/**
+ * Directe-checkoutvariant (/direct, de lage-frictie funnel uit de
+ * e-mail-CTA's): er bestaat nog GEEN contract — de klant heeft alleen
+ * pakket + aantallen gekozen. Stripe verzamelt zelf e-mail, telefoon en
+ * factuuradres; de webhook maakt daarna pas het contractrecord aan uit
+ * de sessiegegevens. De keuzes reizen mee in de metadata (strings), zodat
+ * de webhook de prijsbepalende invoer heeft zonder eigen opslag.
+ */
+export type DirectCheckoutSessionInput = {
+  plan: CheckoutPlan
+  contractId: string
+  choices: {
+    contractType: ContractType
+    outdoorUnits: number
+    indoorUnits: number
+    paymentFrequency: string
+  }
+  successUrl: string
+  cancelUrl: string
+}
+
+export function buildDirectCheckoutSessionBody(
+  input: DirectCheckoutSessionInput,
+): string {
+  const metadata = {
+    contractId: input.contractId,
+    direct: '1',
+    contractType: input.choices.contractType,
+    outdoorUnits: String(input.choices.outdoorUnits),
+    indoorUnits: String(input.choices.indoorUnits),
+    paymentFrequency: input.choices.paymentFrequency,
+  }
+  const base: Record<string, unknown> = {
+    mode: input.plan.mode,
+    success_url: input.successUrl,
+    cancel_url: input.cancelUrl,
+    locale: 'nl',
+    // De webhook heeft naam/adres/telefoon nodig om het contract te
+    // kunnen aanmaken — Stripe vraagt ze op de betaalpagina uit.
+    billing_address_collection: 'required',
+    phone_number_collection: { enabled: true },
+    metadata,
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: 'eur',
+          unit_amount: input.plan.amountCents,
+          product_data: { name: input.plan.description },
+          ...(input.plan.mode === 'subscription'
+            ? { recurring: { interval: input.plan.interval } }
+            : {}),
+        },
+      },
+    ],
+  }
+  if (input.plan.mode === 'subscription') {
+    base.subscription_data = { metadata }
+  } else {
+    base.payment_intent_data = { metadata }
+  }
+  return encodeStripeForm(base)
+}
+
 export type StripeResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; message: string }
 
-export async function createCheckoutSession(
+/** POST /v1/checkout/sessions met een al opgebouwde form-body. */
+export async function postCheckoutSession(
   secretKey: string,
-  input: CheckoutSessionInput,
+  body: string,
   idempotencyKey: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<StripeResult<{ id: string; url: string }>> {
@@ -157,7 +222,7 @@ export async function createCheckoutSession(
       'Content-Type': 'application/x-www-form-urlencoded',
       'Idempotency-Key': idempotencyKey,
     },
-    body: buildCheckoutSessionBody(input),
+    body,
   })
   if (!response.ok) {
     const text = await response.text()
@@ -168,4 +233,18 @@ export async function createCheckoutSession(
     return { ok: false, status: response.status, message: 'Malformed session' }
   }
   return { ok: true, data: { id: json.id, url: json.url } }
+}
+
+export async function createCheckoutSession(
+  secretKey: string,
+  input: CheckoutSessionInput,
+  idempotencyKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<StripeResult<{ id: string; url: string }>> {
+  return await postCheckoutSession(
+    secretKey,
+    buildCheckoutSessionBody(input),
+    idempotencyKey,
+    fetchImpl,
+  )
 }

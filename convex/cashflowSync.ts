@@ -89,6 +89,45 @@ export const pushSignup = internalAction({
   },
 });
 
+/**
+ * /direct-funnel: de klant heeft meteen via Stripe betaald — er is nooit
+ * een ING-regel geweest. Zet de abonnee direct als "Via Stripe" in de
+ * cashflow-administratie (stripeManaged, zonder IBAN: Stripe incasseert
+ * zelf, de regel valt per definitie buiten de ING-batch).
+ */
+export const pushStripeSignup = internalAction({
+  args: { contractId: v.string() },
+  handler: async (ctx, args) => {
+    const contract = await ctx.runQuery(
+      internal.cashflowSync.getContractInternal,
+      { contractId: args.contractId },
+    );
+    if (contract === null) return;
+    if (contract.contractType === "geen") return;
+    const monthly = calculateMonthlyPrice(
+      contract.contractType,
+      contract.numberOfOutdoorUnits,
+      contract.numberOfIndoorUnits,
+    );
+    const isYearly = contract.paymentFrequency === "jaarlijks";
+    const amountEuros = isYearly
+      ? calculateYearlyPrice(monthly, true)
+      : monthly;
+    const now = new Date();
+    await postToCashflow({
+      action: "create",
+      stripeManaged: true,
+      sourceContractId: contract.contractId,
+      name: `${contract.firstName} ${contract.lastName}`.trim(),
+      iban: "",
+      amountCents: Math.round(amountEuros * 100),
+      frequency: isYearly ? "yearly" : "monthly",
+      yearlyMonth: isYearly ? now.getMonth() + 1 : undefined,
+      mandateDate: now.toISOString().slice(0, 10),
+    });
+  },
+});
+
 /** Stripe-betaling gelukt → wachtende ING-regel in cashflow afvoeren. */
 export const cancelSignup = internalAction({
   args: { contractId: v.string() },
