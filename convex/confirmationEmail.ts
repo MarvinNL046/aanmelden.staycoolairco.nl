@@ -207,7 +207,7 @@ ${
     ? `<div style="margin:24px 0;padding:16px;background-color:#f0f9ff;border-radius:8px;border:1px solid #0066cc"><table style="width:100%;border-collapse:collapse"><tr><td style="vertical-align:middle"><strong style="color:#0066cc">Contract Document</strong></td><td style="text-align:right"><a href="${pdfUrl}" style="display:inline-block;padding:8px 16px;background-color:#0066cc;color:white;text-decoration:none;border-radius:4px;font-weight:bold">Download PDF</a></td></tr></table><p style="margin:8px 0 0 0;font-size:12px;color:#666">Bewaar dit contract goed. U kunt het altijd terugvinden via deze link.</p></div>`
     : ""
 }
-<div style="margin:24px 0;padding:16px;background-color:#fff8e1;border-left:4px solid #ffc107;font-size:13px"><strong>Wat gebeurt er nu?</strong><ul style="margin:8px 0;padding-left:20px"><li>Wij verwerken uw aanmelding binnen 2 werkdagen</li><li>Wij nemen contact met u op voor het plannen van de onderhoudsbeurt</li></ul></div>
+<div style="margin:24px 0;padding:16px;background-color:#fff8e1;border-radius:8px;font-size:13px"><strong>Wat gebeurt er nu?</strong><ul style="margin:8px 0;padding-left:20px"><li>Wij verwerken uw aanmelding binnen 2 werkdagen</li><li>Wij nemen contact met u op voor het plannen van de onderhoudsbeurt</li></ul></div>
 <div style="margin:16px 0;padding:12px;background-color:#f5f5f5;border-radius:4px;font-size:13px">${escapeHtml(serviceText)}</div>
 </div>
 <div style="padding:24px 16px;background-color:#f5f5f5;margin-top:24px"><div style="text-align:center;margin-top:16px;font-size:12px;color:#666"><strong>StayCool Airco B.V.</strong><br/>Tel: 046 202 1430 | Email: info@staycoolairco.nl<br/>Website: <a href="https://staycoolairco.nl" style="color:#0066cc">staycoolairco.nl</a></div></div>
