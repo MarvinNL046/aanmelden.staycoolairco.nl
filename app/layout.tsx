@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 import ConvexClientProvider from '@/components/ConvexClientProvider'
 
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="nl">
       <body className={inter.className}>
         <ConvexClientProvider>{children}</ConvexClientProvider>
+        <Analytics />
       </body>
     </html>
   )

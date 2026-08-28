@@ -54,6 +54,12 @@ export const submit = mutation({
       internal.confirmationEmail.sendInternalNotice,
       { contractId: args.contractId },
     );
+    // Abonnement afgesloten = gewonnen → uit de wervings-dripcampagne.
+    await ctx.scheduler.runAfter(
+      0,
+      internal.cashflowSync.notifyCampaignConverted,
+      { contractId: args.contractId },
+    );
     return id;
   },
 });

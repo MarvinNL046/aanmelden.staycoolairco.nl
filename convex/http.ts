@@ -81,6 +81,12 @@ http.route({
             internal.cashflowSync.pushStripeSignup,
             { contractId: event.contractId },
           );
+          // Gewonnen → uit de wervingscampagne (leadflow-tag eraf).
+          await ctx.scheduler.runAfter(
+            0,
+            internal.cashflowSync.notifyCampaignConverted,
+            { contractId: event.contractId },
+          );
         }
         console.log(
           `stripe webhook: direct contract ${event.contractId} → ${status} (${outcome})`,

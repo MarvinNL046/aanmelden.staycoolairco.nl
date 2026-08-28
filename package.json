@@ -19,6 +19,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/react-google-recaptcha": "^2.1.9",
+    "@vercel/analytics": "^2.0.1",
     "convex": "^1.35.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

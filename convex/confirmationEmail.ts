@@ -126,6 +126,8 @@ ${
 async function deliverConfirmation(
   ctx: { runQuery: any },
   contractId: string,
+  /** Testkopie: stuur naar dit adres i.p.v. de klant, met [KOPIE]-prefix. */
+  toOverride?: string,
 ): Promise<{ sent: boolean }> {
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey === undefined || apiKey.length === 0) {
@@ -182,10 +184,12 @@ async function deliverConfirmation(
 
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif,Arial;font-size:14px;color:#333;padding:14px 8px;background-color:#f5f5f5">
 <div style="max-width:600px;margin:auto;background-color:#fff">
-<div style="border-top:6px solid #0066cc;padding:16px"><span style="font-size:16px;vertical-align:middle"><strong>StayCool Airco - Bevestiging Onderhoudscontract</strong></span></div>
+<div style="border-top:6px solid #0066cc;padding:16px"><span style="font-size:16px;vertical-align:middle"><strong>StayCool Airco</strong></span></div>
 <div style="padding:0 16px">
+<h1 style="font-size:23px;line-height:1.3;margin:8px 0 4px;color:#173a40;">Bedankt voor uw aanmelding! 🎉</h1>
+<p style="font-size:15px;color:#555;margin-top:0;">Uw onderhoudscontract is geregeld — u hoeft verder niets te doen.</p>
 <p>Beste ${name},</p>
-<p>Bedankt voor het afsluiten van uw onderhoudscontract bij StayCool Airco. Hierbij bevestigen wij uw aanmelding.</p>
+<p>Wat fijn dat u voor StayCool Airco kiest! Hierbij bevestigen wij uw aanmelding; hieronder vindt u alle details op een rij.</p>
 <div style="text-align:left;font-size:14px;padding-bottom:4px;border-bottom:2px solid #333;margin-top:24px"><strong>Contract Details</strong></div>
 <table style="width:100%;border-collapse:collapse;margin-top:16px">
 ${row("Contractnummer", contract.contractId, false)}
@@ -235,8 +239,8 @@ ${
       },
       body: JSON.stringify({
         from: fromAddress,
-        to: [contract.email],
-        subject: `Bevestiging onderhoudscontract ${contract.contractId} — StayCool Airco`,
+        to: [toOverride ?? contract.email],
+        subject: `${toOverride !== undefined ? "[KOPIE] " : ""}Bevestiging onderhoudscontract ${contract.contractId} — StayCool Airco`,
         html,
       }),
     });
@@ -262,5 +266,14 @@ export const sendInternal = internalAction({
   args: { contractId: v.string() },
   handler: async (ctx, args): Promise<{ sent: boolean }> => {
     return await deliverConfirmation(ctx, args.contractId);
+  },
+});
+
+/** Kopie van de bevestiging naar een eigen adres (controle/preview) —
+ *  de klant zelf krijgt niets. */
+export const sendTestCopy = internalAction({
+  args: { contractId: v.string(), to: v.string() },
+  handler: async (ctx, args): Promise<{ sent: boolean }> => {
+    return await deliverConfirmation(ctx, args.contractId, args.to);
   },
 });

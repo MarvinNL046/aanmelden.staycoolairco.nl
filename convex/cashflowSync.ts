@@ -128,6 +128,39 @@ export const pushStripeSignup = internalAction({
   },
 });
 
+/**
+ * Gewonnen! Wie een abonnement afsluit hoort de wervings-dripcampagne
+ * niet meer te krijgen — meld het e-mailadres af bij leadflow (die haalt
+ * de campagne-tag weg; de resterende dripmails slaan de klant dan over).
+ * Best-effort: een storing hier mag de aanmelding nooit raken.
+ */
+export const notifyCampaignConverted = internalAction({
+  args: { contractId: v.string() },
+  handler: async (ctx, args) => {
+    const url = process.env.LEADFLOW_CAMPAIGN_SYNC_URL;
+    const key = process.env.LEADFLOW_CAMPAIGN_SYNC_KEY;
+    if (!url || !key) return;
+    const contract = await ctx.runQuery(
+      internal.cashflowSync.getContractInternal,
+      { contractId: args.contractId },
+    );
+    if (contract === null || contract.contractType === "geen") return;
+    if (!contract.email) return;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key },
+        body: JSON.stringify({ email: contract.email }),
+      });
+      console.log(
+        `campaignConverted ${args.contractId}: ${response.status} ${await response.text()}`,
+      );
+    } catch (err) {
+      console.error(`campaignConverted ${args.contractId}:`, err);
+    }
+  },
+});
+
 /** Stripe-betaling gelukt → wachtende ING-regel in cashflow afvoeren. */
 export const cancelSignup = internalAction({
   args: { contractId: v.string() },
