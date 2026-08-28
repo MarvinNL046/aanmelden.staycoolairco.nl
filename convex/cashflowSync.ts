@@ -150,7 +150,12 @@ export const notifyCampaignConverted = internalAction({
       const response = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json", "x-api-key": key },
-        body: JSON.stringify({ email: contract.email }),
+        body: JSON.stringify({
+          email: contract.email,
+          // Naam-fallback: matcht ook als het afrekenadres afwijkt van
+          // het adres waar de campagne heen mailt.
+          name: `${contract.firstName} ${contract.lastName}`.trim(),
+        }),
       });
       console.log(
         `campaignConverted ${args.contractId}: ${response.status} ${await response.text()}`,
