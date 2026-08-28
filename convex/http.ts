@@ -69,6 +69,13 @@ http.route({
             internal.confirmationEmail.sendInternalNotice,
             { contractId: event.contractId },
           );
+          // Nette bevestiging naar de klant zelf (het formulier stuurt die
+          // vanuit de browser; hier doet de webhook dat).
+          await ctx.scheduler.runAfter(
+            0,
+            internal.confirmationEmail.sendInternal,
+            { contractId: event.contractId },
+          );
           await ctx.scheduler.runAfter(
             0,
             internal.cashflowSync.pushStripeSignup,

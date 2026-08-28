@@ -120,19 +120,23 @@ ${
   },
 });
 
-export const send = action({
-  args: { contractId: v.string() },
-  handler: async (ctx, args): Promise<{ sent: boolean }> => {
+/** Gedeelde bezorging: gebruikt door de publieke action (formulier-flow,
+ *  client roept hem na submit aan) én de internalAction (directe
+ *  Stripe-funnel, aangeroepen vanuit de webhook). */
+async function deliverConfirmation(
+  ctx: { runQuery: any },
+  contractId: string,
+): Promise<{ sent: boolean }> {
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey === undefined || apiKey.length === 0) {
       console.warn("confirmationEmail: RESEND_API_KEY ontbreekt");
       return { sent: false };
     }
     const result = await ctx.runQuery(internal.confirmationEmail.getForEmail, {
-      contractId: args.contractId,
+      contractId,
     });
     if (result === null) {
-      console.error(`confirmationEmail: contract ${args.contractId} niet gevonden`);
+      console.error(`confirmationEmail: contract ${contractId} niet gevonden`);
       return { sent: false };
     }
     const { contract, pdfUrl } = result;
@@ -157,8 +161,14 @@ export const send = action({
         : contract.paymentFrequency === "jaarlijks"
           ? `€${totalPrice},- per jaar`
           : `€${totalPrice},- per maand`;
-    const serviceText =
-      contract.contractType !== "geen"
+    // Directe Stripe-funnel: er is al betaald en er is geen ING-machtiging —
+    // andere vervolgtekst dan de formulier-flow (die op incasso wacht).
+    const viaStripe = contract.stripeStatus !== undefined;
+    const serviceText = viaStripe
+      ? contract.contractType !== "geen"
+        ? "U heeft online betaald via Stripe — uw abonnement is direct actief. Vervolgbetalingen gaan automatisch via dezelfde betaalmethode. Wij nemen contact met u op om de eerste onderhoudsbeurt in te plannen."
+        : "U heeft de onderhoudsbeurt al online betaald. Wij nemen contact met u op om de beurt in te plannen."
+      : contract.contractType !== "geen"
         ? `Uw contract gaat in binnen 5 werkdagen. De afschrijving zal plaatsvinden aan het einde van de maand tussen de 27ste en 28ste op de door u opgegeven rekening eindigend op ...${contract.iban?.slice(-4) ?? "****"}.`
         : "Wij nemen contact met u op voor het plannen van de onderhoudsbeurt. U betaalt na afloop van de onderhoudsbeurt.";
 
@@ -237,5 +247,20 @@ ${
       return { sent: false };
     }
     return { sent: true };
+}
+
+export const send = action({
+  args: { contractId: v.string() },
+  handler: async (ctx, args): Promise<{ sent: boolean }> => {
+    return await deliverConfirmation(ctx, args.contractId);
+  },
+});
+
+/** Webhook-variant (directe funnel): zelfde mail, maar aangeroepen door het
+ *  systeem in plaats van de browser. */
+export const sendInternal = internalAction({
+  args: { contractId: v.string() },
+  handler: async (ctx, args): Promise<{ sent: boolean }> => {
+    return await deliverConfirmation(ctx, args.contractId);
   },
 });
