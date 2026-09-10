@@ -15,6 +15,7 @@ type Step = 'contract' | 'customer' | 'sepa' | 'summary'
 export default function ContractForm() {
   const [savedData, setSavedData, clearSavedData] = useLocalStorage('contractFormData', {
     currentStep: 'contract' as Step,
+    choiceMade: false,
     contractType: 'geen' as ContractType,
     customerData: {
       firstName: '',
@@ -49,6 +50,8 @@ export default function ContractForm() {
   })
   const [showSaveIndicator, setShowSaveIndicator] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [choiceMade, setChoiceMade] = useState(false)
+  const [linkedPlan, setLinkedPlan] = useState<ContractType | null>(null)
 
   // Rehydrate local state from localStorage after mount.
   // useLocalStorage starts with defaults (to avoid SSR hydration mismatch) and
@@ -62,6 +65,7 @@ export default function ContractForm() {
         : null
       if (raw) {
         const parsed = JSON.parse(raw)
+        setChoiceMade(parsed.choiceMade === true || ['customer', 'sepa', 'summary'].includes(parsed.currentStep))
         if (parsed?.currentStep) setCurrentStep(parsed.currentStep)
         if (parsed?.contractType) setContractType(parsed.contractType)
         if (parsed?.customerData) setCustomerData(parsed.customerData)
@@ -75,6 +79,15 @@ export default function ContractForm() {
     } catch (err) {
       console.error('Failed to rehydrate contract form:', err)
     }
+    // Only accept known package identifiers, never prices or customer data.
+    // Always show the selection step so a linked preference is confirmed.
+    const plan = new URLSearchParams(window.location.search).get('pakket')
+    if (plan === 'basis' || plan === 'premium') {
+      setContractType(plan)
+      setLinkedPlan(plan)
+      setChoiceMade(true)
+      setCurrentStep('contract')
+    }
     setHydrated(true)
   }, [hydrated])
 
@@ -84,14 +97,21 @@ export default function ContractForm() {
     if (!hydrated) return
     setSavedData({
       currentStep,
+      choiceMade,
       contractType,
       customerData,
       sepaData
     })
     setShowSaveIndicator(true)
-  }, [hydrated, currentStep, contractType, customerData, sepaData])
+  }, [hydrated, currentStep, choiceMade, contractType, customerData, sepaData])
 
   const handleContractSelect = (type: ContractType) => {
+    setChoiceMade(true)
+    setLinkedPlan(null)
+    // Consume the preference after confirmation so refresh resumes progress.
+    const url = new URL(window.location.href)
+    url.searchParams.delete('pakket')
+    window.history.replaceState(window.history.state, '', url)
     setContractType(type)
     setCustomerData({ ...customerData, contractType: type })
     setCurrentStep('customer')
@@ -141,11 +161,12 @@ export default function ContractForm() {
       <div className="mb-8 bg-white rounded-lg shadow-md p-4 sm:p-6">
         <div className="text-center mb-4">
           <span className="text-base sm:text-lg font-semibold text-gray-800">
-            Stap {contractType === 'geen' ? 
+            {!choiceMade ? 'Stap 1: kies uw pakket' : <>Stap {contractType === 'geen' ?
               currentStep === 'contract' ? '1' : currentStep === 'customer' ? '2' : '3'
               : currentStep === 'contract' ? '1' : currentStep === 'customer' ? '2' : currentStep === 'sepa' ? '3' : '4'
-            } van {contractType === 'geen' ? '3' : '4'}
+            } van {contractType === 'geen' ? '3' : '4'}</>}
           </span>
+          {!choiceMade && <p className="text-sm text-gray-600 mt-2">Een losse beurt heeft 3 stappen. Een abonnement heeft 4 stappen, inclusief betaling.</p>}
         </div>
         <div className="flex items-center justify-center px-2">
           <div className="flex items-center flex-wrap sm:flex-nowrap justify-center gap-2 sm:gap-0">
@@ -156,12 +177,12 @@ export default function ContractForm() {
               { step: 'summary', label: 'Overzicht', icon: '4' }
             ].map((s, idx) => {
               // Skip SEPA step for 'geen' contract
-              if (s.step === 'sepa' && contractType === 'geen') {
+              if (s.step === 'sepa' && choiceMade && contractType === 'geen') {
                 return null
               }
               
               // Calculate display index
-              const displaySteps = contractType === 'geen' ? ['contract', 'customer', 'summary'] : ['contract', 'customer', 'sepa', 'summary']
+              const displaySteps = choiceMade && contractType === 'geen' ? ['contract', 'customer', 'summary'] : ['contract', 'customer', 'sepa', 'summary']
               const displayIdx = displaySteps.indexOf(s.step)
               const currentIdx = displaySteps.indexOf(currentStep)
               
@@ -186,7 +207,7 @@ export default function ContractForm() {
                       </div>
                       <span className={`mt-2 sm:mt-0 sm:ml-2 text-xs sm:text-sm font-medium ${
                         currentStep === s.step ? 'text-gray-900 font-bold' : 'text-gray-600'
-                      }`}>{s.label}</span>
+                      }`}>{s.step === 'sepa' && !choiceMade ? 'Betaling (bij abonnement)' : s.label}</span>
                     </div>
                   </div>
                   {s.step !== 'summary' && s.step !== (contractType === 'geen' ? 'customer' : 'sepa') && (
@@ -205,7 +226,10 @@ export default function ContractForm() {
         <div className="p-6 sm:p-8 lg:p-12">
           <StepTransition stepKey={currentStep}>
             {currentStep === 'contract' && (
-              <ContractSelection onSelect={handleContractSelect} selected={contractType} />
+              <>
+                {linkedPlan && <p role="status" className="mb-6 rounded-lg bg-blue-50 p-4 text-blue-900">Uw voorkeur: {linkedPlan === 'basis' ? 'Basis' : 'Premium'}. Bevestig hieronder uw pakket of kies een ander pakket. U sluit hiermee nog geen abonnement af.</p>}
+                <ContractSelection onSelect={handleContractSelect} selected={choiceMade ? contractType : null} />
+              </>
             )}
             
             {currentStep === 'customer' && (

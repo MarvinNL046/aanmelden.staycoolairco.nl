@@ -50,7 +50,7 @@ const contractOptions: ContractOption[] = [
 
 interface Props {
   onSelect: (type: ContractType) => void
-  selected: ContractType
+  selected: ContractType | null
 }
 
 export default function ContractSelection({ onSelect, selected }: Props) {
@@ -58,6 +58,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Kies uw onderhoudscontract</h2>
       <p className="text-gray-600 mb-2">Selecteer het pakket dat het beste bij uw situatie past</p>
+      <p className="text-gray-700 mb-6">Onderhoud en abonnementen zijn voor bestaande klanten met een airco die door StayCool is geleverd en geïnstalleerd. Houd uw klant-, offerte- of factuurnummer bij de hand voor de volgende stap.</p>
       
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
         <p className="text-sm text-blue-900 font-medium mb-2">
@@ -78,7 +79,6 @@ export default function ContractSelection({ onSelect, selected }: Props) {
                 ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-2xl' 
                 : 'bg-white border border-gray-200 hover:shadow-lg'
             }`}
-            onClick={() => onSelect(option.id)}
           >
             {option.id === 'basis' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
@@ -159,6 +159,8 @@ export default function ContractSelection({ onSelect, selected }: Props) {
             </ul>
             
             <button
+              type="button"
+              aria-label={`${selected === option.id ? 'Bevestig' : 'Kies'} ${option.name}`}
               className={`w-full py-3 px-6 rounded-xl font-semibold transition-all ${
                 selected === option.id
                   ? 'bg-white text-blue-600 hover:bg-blue-50'
@@ -166,7 +168,7 @@ export default function ContractSelection({ onSelect, selected }: Props) {
               }`}
               onClick={() => onSelect(option.id)}
             >
-              {selected === option.id ? 'Geselecteerd ✓' : 'Selecteer dit pakket'}
+              {selected === option.id ? 'Bevestig dit pakket' : 'Selecteer dit pakket'}
             </button>
           </div>
         ))}
