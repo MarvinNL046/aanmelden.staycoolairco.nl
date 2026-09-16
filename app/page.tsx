@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import ContractForm from '@/components/ContractForm'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import ContactButtons from '@/components/ContactButtons'
 import ServiceWorkerCleanup from '@/components/ServiceWorkerCleanup'
 import Footer from '@/components/Footer'
 
@@ -30,7 +30,7 @@ export default function Home() {
           
           <div className="mt-8 text-center">
             <p className="text-gray-600 mb-4">Heeft u vragen? Wij helpen u graag!</p>
-            <WhatsAppButton />
+            <ContactButtons />
           </div>
         </div>
       </div>
